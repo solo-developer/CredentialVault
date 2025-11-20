@@ -57,7 +57,7 @@ const MasterPasswordSetup: React.FC = () => {
     const storedPassword = await AsyncStorage.getItem('@master_password');
     const storedUsername = await AsyncStorage.getItem('@username');
     if (username.trim() === storedUsername && password === storedPassword) {
-      navigation.replace('HomeScreen');
+      navigation.replace('Dashboard');
     } else {
       Alert.alert('Error', 'Invalid username or password');
     }

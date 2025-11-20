@@ -1,56 +1,44 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-import MasterPasswordScreen from './src/screens/MasterPasswordScreen';
+import React, { useState, useEffect } from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+// Screens
 import MasterPasswordSetup from './src/screens/MasterPasswordScreen';
-import HomeScreen from './src/screens/HomeScreen';
+import Dashboard from './src/screens/Dashboard';
 
-export type RootStackParamList = {
-  MasterPasswordSetup: undefined;
-  HomeScreen: undefined;
-};
+const Stack = createNativeStackNavigator();
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+export default function App() {
+  const [loading, setLoading] = useState(true);
+  const [hasMasterPassword, setHasMasterPassword] = useState(false);
 
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
+  useEffect(() => {
+    const checkMasterPassword = async () => {
+      const password = await AsyncStorage.getItem('masterPassword');
+      setHasMasterPassword(!!password);
+      setLoading(false);
+    };
+    checkMasterPassword();
+  }, []);
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="MasterPasswordSetup" component={MasterPasswordScreen} />
-        <Stack.Screen name="HomeScreen" component={HomeScreen} />
+        {!hasMasterPassword ? (
+          <Stack.Screen name="MasterPasswordSetup" component={MasterPasswordSetup} />
+        ) : null}
+        <Stack.Screen name="Dashboard" component={Dashboard} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
-
-export default App;
