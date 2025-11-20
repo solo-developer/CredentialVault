@@ -1,103 +1,122 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, Modal, Text } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, Modal } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-
 import HomeScreen from './HomeScreen';
 import SettingsScreen from './SettingsScreen';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const Tab = createBottomTabNavigator();
 
 export default function Dashboard() {
-  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [showAddMenu, setShowAddMenu] = useState(false);
 
-  const openAddModal = () => setAddModalVisible(true);
-  const closeAddModal = () => setAddModalVisible(false);
+  const handleAddLongPress = () => setShowAddMenu(true);
+  const closeAddMenu = () => setShowAddMenu(false);
+
+  const handleAddFolder = () => {
+    closeAddMenu();
+    // open folder modal
+  };
+
+  const handleAddItem = () => {
+    closeAddMenu();
+    // open item modal
+  };
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarShowLabel: true,
-          tabBarIcon: ({ color, size }) => {
-            if (route.name === 'Home') return <Ionicons name="home-outline" size={size} color={color} />;
-            if (route.name === 'Settings') return <Ionicons name="settings-outline" size={size} color={color} />;
-            return null;
-          },
-        })}
+        screenOptions={{ headerShown: false }}
+        tabBar={(props) => (
+          <View style={styles.tabBar}>
+            {/* Home Tab */}
+            <TouchableOpacity
+              style={styles.tabButton}
+              onPress={() => props.navigation.navigate('Home')}
+            >
+              <Ionicons name="home-outline" size={25} color="#333" />
+              <Text>Home</Text>
+            </TouchableOpacity>
+
+            {/* Add Button in center */}
+            <TouchableOpacity
+              style={styles.addButton}
+              onLongPress={handleAddLongPress}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add" size={30} color="#fff" />
+            </TouchableOpacity>
+
+            {/* Settings Tab */}
+            <TouchableOpacity
+              style={styles.tabButton}
+              onPress={() => props.navigation.navigate('Settings')}
+            >
+              <Ionicons name="settings-outline" size={25} color="#333" />
+              <Text>Settings</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       >
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
 
-      {/* Floating Add Button */}
-      <View style={styles.addButtonContainer}>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={openAddModal}
-          onLongPress={openAddModal} // long press opens modal
-        >
-          <Ionicons name="add" size={32} color="#fff" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Modal for Add Folder / Add Item */}
-      <Modal transparent visible={addModalVisible} animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <TouchableOpacity style={styles.modalButton} onPress={() => { /* Add Folder Logic */ }}>
-              <Text style={styles.modalText}>Add Folder</Text>
+      {/* Add Menu Modal */}
+      <Modal transparent visible={showAddMenu} animationType="fade">
+        <TouchableOpacity style={styles.modalBackground} onPress={closeAddMenu}>
+          <View style={styles.addMenu}>
+            <TouchableOpacity style={styles.menuButton} onPress={handleAddFolder}>
+              <Text style={styles.menuText}>Add Folder</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.modalButton} onPress={() => { /* Add Item Logic */ }}>
-              <Text style={styles.modalText}>Add Item</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#ccc' }]} onPress={closeAddModal}>
-              <Text style={styles.modalText}>Cancel</Text>
+            <TouchableOpacity style={styles.menuButton} onPress={handleAddItem}>
+              <Text style={styles.menuText}>Add Item</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </TouchableOpacity>
       </Modal>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  addButtonContainer: {
-    position: 'absolute',
-    bottom: 25,
-    alignSelf: 'center',
+  tabBar: {
+    flexDirection: 'row',
+    height: 70,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#eee',
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
   },
   addButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     backgroundColor: '#007bff',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
+    marginBottom: 30,
   },
-  modalOverlay: {
+  modalBackground: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalContent: {
-    width: 250,
+  addMenu: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 10,
     padding: 20,
+    width: 200,
   },
-  modalButton: {
-    padding: 12,
-    marginVertical: 5,
-    backgroundColor: '#007bff',
-    borderRadius: 8,
+  menuButton: {
+    paddingVertical: 10,
   },
-  modalText: {
-    color: '#fff',
+  menuText: {
+    fontSize: 16,
     textAlign: 'center',
-    fontWeight: 'bold',
   },
 });
