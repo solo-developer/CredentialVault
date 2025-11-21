@@ -1,122 +1,234 @@
-import React, { useState } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Modal } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from './HomeScreen';
-import SettingsScreen from './SettingsScreen';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+// screens/Dashboard.tsx
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, Modal, TextInput, StyleSheet } from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import HomeScreen from "./HomeScreen";
+import SettingsScreen from "./SettingsScreen";
+import { addFolder } from "../services/FolderService";
+import { Alert } from "react-native";
+
 
 const Tab = createBottomTabNavigator();
 
-export default function Dashboard() {
-  const [showAddMenu, setShowAddMenu] = useState(false);
+export default function Dashboard({ navigation }) {
+  const [showMenu, setShowMenu] = useState(false);
+  const [folderModalVisible, setFolderModalVisible] = useState(false);
+  const [folderName, setFolderName] = useState("");
 
-  const handleAddLongPress = () => setShowAddMenu(true);
-  const closeAddMenu = () => setShowAddMenu(false);
+  const handleAddFolder = async () => {
+    if (!folderName.trim()) {
+      Alert.alert("Folder name cannot be empty");
+      return;
+    }
 
-  const handleAddFolder = () => {
-    closeAddMenu();
-    // open folder modal
-  };
+    const result = await addFolder(folderName.trim());
 
-  const handleAddItem = () => {
-    closeAddMenu();
-    // open item modal
+    if (!result.success) {
+      Alert.alert(result.message);
+      return;
+    }
+
+    setFolderModalVisible(false);
+    setFolderName("");
+
+    navigation.navigate("Dashboard", {
+      screen: "Home",
+      params: { refresh: Date.now() },
+    });
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <>
       <Tab.Navigator
-        screenOptions={{ headerShown: false }}
-        tabBar={(props) => (
-          <View style={styles.tabBar}>
-            {/* Home Tab */}
-            <TouchableOpacity
-              style={styles.tabButton}
-              onPress={() => props.navigation.navigate('Home')}
-            >
-              <Ionicons name="home-outline" size={25} color="#333" />
-              <Text>Home</Text>
-            </TouchableOpacity>
-
-            {/* Add Button in center */}
-            <TouchableOpacity
-              style={styles.addButton}
-              onLongPress={handleAddLongPress}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="add" size={30} color="#fff" />
-            </TouchableOpacity>
-
-            {/* Settings Tab */}
-            <TouchableOpacity
-              style={styles.tabButton}
-              onPress={() => props.navigation.navigate('Settings')}
-            >
-              <Ionicons name="settings-outline" size={25} color="#333" />
-              <Text>Settings</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+      
+        screenOptions={{
+          headerShown: false,
+          tabBarShowLabel: false,
+          tabBarStyle: styles.tabBar,
+          tabBarItemStyle: {
+              width: "33.33%",
+              alignItems: "center",
+              justifyContent: "center",
+          }
+        }}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Settings" component={SettingsScreen} />
+        {/* HOME */}
+        <Tab.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <View style={styles.iconContainer}>
+                <Ionicons name="home" size={26} color={focused ? "#007bff" : "#444"} />
+                <Text style={[styles.iconText, focused && { color: "#007bff" }]}>Home</Text>
+              </View>
+            ),
+          }}
+        />
+
+        {/* ADD BUTTON */}
+        <Tab.Screen
+          name="Add"
+          component={Empty}
+          listeners={{
+            tabPress: e => e.preventDefault(),
+          }}
+          options={{
+            tabBarIcon: () => (
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => setShowMenu(!showMenu)}
+              >
+                <Ionicons name="add" size={32} color="white" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+
+        {/* SETTINGS */}
+        <Tab.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <View style={styles.iconContainer}>
+                <Ionicons name="settings" size={26} color={focused ? "#007bff" : "#444"} />
+                <Text style={[styles.iconText, focused && { color: "#007bff" }]}>Settings</Text>
+              </View>
+            ),
+          }}
+        />
       </Tab.Navigator>
 
-      {/* Add Menu Modal */}
-      <Modal transparent visible={showAddMenu} animationType="fade">
-        <TouchableOpacity style={styles.modalBackground} onPress={closeAddMenu}>
-          <View style={styles.addMenu}>
-            <TouchableOpacity style={styles.menuButton} onPress={handleAddFolder}>
-              <Text style={styles.menuText}>Add Folder</Text>
+      {/* Floating Menu */}
+      {showMenu && (
+        <View style={styles.popupMenu}>
+          <TouchableOpacity
+            style={styles.popupBtn}
+            onPress={() => {
+              setShowMenu(false);
+              setFolderModalVisible(true);
+            }}
+          >
+            <Ionicons name="folder" size={22} color="white" />
+            <Text style={styles.popupText}>Add Folder</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.popupBtn}>
+            <Ionicons name="key" size={22} color="white" />
+            <Text style={styles.popupText}>Add Item</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Add Folder Modal */}
+      <Modal visible={folderModalVisible} transparent animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Create Folder</Text>
+            <TextInput
+              placeholder="Folder name"
+              value={folderName}
+              onChangeText={setFolderName}
+              style={styles.input}
+            />
+
+            <TouchableOpacity style={styles.saveBtn} onPress={handleAddFolder}>
+              <Text style={styles.saveText}>Save</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuButton} onPress={handleAddItem}>
-              <Text style={styles.menuText}>Add Item</Text>
+
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => setFolderModalVisible(false)}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+        </View>
       </Modal>
-    </View>
+    </>
   );
 }
 
+function Empty() {
+  return <View />;
+}
+
+// STYLES
 const styles = StyleSheet.create({
   tabBar: {
-    flexDirection: 'row',
     height: 70,
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: '#eee',
+    paddingBottom: 10,
+    paddingTop: 10,
   },
   tabButton: {
-    flex: 1,
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
+    width: 70,          // prevents horizontal overflow
   },
+  iconContainer: { alignItems: "center",backgroundColor: "black", minWidth: "100%" },
+  iconText: { 
+    fontSize: 11,
+    marginTop: 2,
+    textAlign: "center",
+    includeFontPadding: false,
+    numberOfLines: 1,
+    lineHeight: 12,
+    height: 14
+  },
+
   addButton: {
-    width: 70,
-    height: 70,
+    width: 62,
+    height: 62,
+    backgroundColor: "#007bff",
     borderRadius: 35,
-    backgroundColor: '#007bff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    top: -10,
   },
-  modalBackground: {
+
+  popupMenu: {
+    position: "absolute",
+    bottom: 100,
+    alignSelf: "center",
+    backgroundColor: "#333",
+    padding: 15,
+    borderRadius: 12,
+  },
+  popupBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+  },
+  popupText: { color: "white", marginLeft: 8 },
+
+  modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  addMenu: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
     padding: 20,
-    width: 200,
   },
-  menuButton: {
-    paddingVertical: 10,
+  modalBox: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
   },
-  menuText: {
-    fontSize: 16,
-    textAlign: 'center',
+  modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 15 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 15,
   },
+  saveBtn: {
+    backgroundColor: "#007bff",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  saveText: { color: "white", textAlign: "center", fontWeight: "bold" },
+  cancelBtn: { padding: 10 },
+  cancelText: { textAlign: "center", color: "#555" },
 });

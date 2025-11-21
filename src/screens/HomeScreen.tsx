@@ -1,65 +1,49 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// screens/HomeScreen.tsx
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList } from "react-native";
+import { getFolders } from "../services/FolderService";
 
-type Folder = {
-  id: string;
-  name: string;
-};
+export default function HomeScreen({ route }) {
+  const [folders, setFolders] = useState([]);
 
-export default function HomeScreen() {
-  const [folders, setFolders] = useState<Folder[]>([]);
+  const loadFolders = async () => {
+    const data = await getFolders();
+    setFolders(data);
+  };
 
   useEffect(() => {
     loadFolders();
   }, []);
 
-  const loadFolders = async () => {
-    try {
-      const storedFolders = await AsyncStorage.getItem('folders');
-      let parsedFolders: Folder[] = storedFolders ? JSON.parse(storedFolders) : [];
-
-      // Check if "Ungrouped" exists
-      const ungroupedExists = parsedFolders.some(f => f.name === 'Ungrouped');
-      if (!ungroupedExists) {
-        const defaultFolder: Folder = { id: Date.now().toString(), name: 'Ungrouped' };
-        parsedFolders.push(defaultFolder);
-        await AsyncStorage.setItem('folders', JSON.stringify(parsedFolders));
-      }
-      setFolders(parsedFolders);
-    } catch (e) {
-      console.error('Failed to load folders', e);
-    }
-  };
-
-  const renderFolder = ({ item }: { item: Folder }) => (
-    <View style={styles.folderContainer}>
-      <Text style={styles.folderName}>{item.name}</Text>
-    </View>
-  );
+  useEffect(() => {
+    if (route.params?.refresh) loadFolders();
+  }, [route.params]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Your Folders</Text>
+      <Text style={styles.header}>Folders</Text>
+
       <FlatList
         data={folders}
-        keyExtractor={(item) => item.id}
-        renderItem={renderFolder}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        keyExtractor={(item, index) => item + "_" + index}  
+        renderItem={({ item }) => (
+          <View style={styles.folderItem}>
+            <Text style={styles.folderText}>{item.name}</Text>
+          </View>
+        )}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 15 },
-  folderContainer: {
+  container: { flex: 1, padding: 20 },
+  header: { fontSize: 22, fontWeight: "bold", marginBottom: 20 },
+  folderItem: {
     padding: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: "#f2f2f2",
+    borderRadius: 8,
     marginBottom: 10,
-    elevation: 2,
   },
-  folderName: { fontSize: 16 },
+  folderText: { fontSize: 16 },
 });
