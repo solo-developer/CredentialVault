@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from "react-native";
 
 interface Folder {
   id: string;
@@ -23,7 +24,7 @@ interface Item {
   customFields: any[];
 }
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }: any) => {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [items, setItems] = useState<Item[]>([]);
 
@@ -43,11 +44,22 @@ const HomeScreen = () => {
   };
 
   const renderFolder = ({ item }: { item: Folder }) => (
-    <TouchableOpacity style={styles.folderRow}>
-      <Text style={styles.folderName}>{item.name}</Text>
-      <Text style={styles.itemCount}>{getItemCount(item.id)}</Text>
-    </TouchableOpacity>
-  );
+  <TouchableOpacity
+    style={styles.folderRow}
+    onPress={() => {
+      const count = getItemCount(item.id);
+      if (count === 0) {
+        Alert.alert("No items in this folder.");
+      } else {
+        navigation.navigate("FolderItems", { folderId: item.id, folderName: item.name });
+      }
+    }}
+  >
+    <Text style={styles.folderName}>{item.name}</Text>
+    <Text style={styles.itemCount}>{getItemCount(item.id)}</Text>
+  </TouchableOpacity>
+);
+
 
   return (
     <View style={styles.container}>

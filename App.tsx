@@ -8,6 +8,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MasterPasswordSetup from './src/screens/MasterPasswordScreen';
 import Dashboard from './src/screens/Dashboard';
 import AddItemScreen from './src/screens/AddItemScreen';
+import FolderItemsScreen from './src/screens/FolderItemsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -40,6 +41,7 @@ export default function App() {
         ) : null}
         <Stack.Screen name="Dashboard" component={Dashboard} />
         <Stack.Screen name="AddItem" component={AddItemScreen} />
+        <Stack.Screen name="FolderItems" component={FolderItemsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
