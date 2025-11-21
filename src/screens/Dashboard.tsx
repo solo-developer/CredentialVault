@@ -37,6 +37,9 @@ export default function Dashboard({ navigation }) {
       params: { refresh: Date.now() },
     });
   };
+  const onAddItem = () => {
+    navigation.navigate("AddItem");
+  };
 
   return (
     <>
@@ -115,7 +118,7 @@ export default function Dashboard({ navigation }) {
             <Text style={styles.popupText}>Add Folder</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.popupBtn}>
+          <TouchableOpacity style={styles.popupBtn} onPress={onAddItem}>
             <Ionicons name="key" size={22} color="white" />
             <Text style={styles.popupText}>Add Item</Text>
           </TouchableOpacity>
@@ -167,7 +170,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: 70,          // prevents horizontal overflow
   },
-  iconContainer: { alignItems: "center",backgroundColor: "black", minWidth: "100%" },
+  iconContainer: { alignItems: "center", minWidth: "100%" },
   iconText: { 
     fontSize: 11,
     marginTop: 2,
