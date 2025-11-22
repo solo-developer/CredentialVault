@@ -35,7 +35,14 @@ const FolderItemsScreen = ({ route }: any) => {
 
   return (
     <View style={styles.container}>
+     <View style={styles.header}>
+     <TouchableOpacity onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={26} color="#333" />
+     </TouchableOpacity>
+
       <Text style={styles.title}>{folderName}</Text>
+      <View style={{ width: 26 }} /> 
+    </View>
 
       {items.length === 0 ? (
         <Text style={styles.noItemsText}>No items in this folder.</Text>
@@ -86,7 +93,7 @@ const FolderItemsScreen = ({ route }: any) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#f8f9fa" },
-  title: { fontSize: 20, fontWeight: "bold", marginBottom: 16 },
+  title: { fontSize: 20, fontWeight: "bold", flexDirection:"row" },
   noItemsText: { fontSize: 16, color: "#666", textAlign: "center", marginTop: 20 },
   itemRow: {
     padding: 12,
@@ -104,6 +111,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  header: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 16,
+  justifyContent: "space-between",
+},
+
 });
 
 export default FolderItemsScreen;

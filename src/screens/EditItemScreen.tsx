@@ -29,6 +29,15 @@ export default function EditItemScreen() {
 
   return (
     <View style={styles.container}>
+        <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Ionicons name="arrow-back" size={26} color="#333" />
+                </TouchableOpacity>
+        
+                <Text style={styles.title}>Edit Item</Text>
+                <View style={{ width: 26 }} />
+              </View>
+
       <Text style={styles.label}>Item Name</Text>
       <TextInput value={name} onChangeText={setName} style={styles.input} />
 
@@ -64,6 +73,13 @@ export default function EditItemScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
+  header: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 16,
+  justifyContent: "space-between",
+},
+  title: { fontSize: 20, fontWeight: "bold", flexDirection:"row" },
   label: { marginTop: 14, fontSize: 14, color: "#555" },
   input: {
     borderWidth: 1,
