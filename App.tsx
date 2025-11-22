@@ -46,7 +46,6 @@ export default function App() {
         <Stack.Screen name="FolderItems" component={FolderItemsScreen} />
         <Stack.Screen name="ViewItem" component={ViewItemScreen} />
         <Stack.Screen name="EditItem" component={EditItemScreen} />
-
       </Stack.Navigator>
     </NavigationContainer>
   );

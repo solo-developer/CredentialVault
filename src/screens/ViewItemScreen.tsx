@@ -53,7 +53,7 @@ export default function ViewItemScreen() {
       ) : null}
 
       {/* Load custom fields */}
-      {item.customFields?.map((cf) => (
+      {item.customFields?.map((cf :any) => (
         <View key={cf.id}>
           <Text style={styles.label}>{cf.label}</Text>
           <Text style={styles.value}>{cf.value}</Text>
