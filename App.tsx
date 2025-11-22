@@ -9,6 +9,8 @@ import MasterPasswordSetup from './src/screens/MasterPasswordScreen';
 import Dashboard from './src/screens/Dashboard';
 import AddItemScreen from './src/screens/AddItemScreen';
 import FolderItemsScreen from './src/screens/FolderItemsScreen';
+import ViewItemScreen from './src/screens/ViewItemScreen';
+import EditItemScreen from './src/screens/EditItemScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,6 +44,9 @@ export default function App() {
         <Stack.Screen name="Dashboard" component={Dashboard} />
         <Stack.Screen name="AddItem" component={AddItemScreen} />
         <Stack.Screen name="FolderItems" component={FolderItemsScreen} />
+        <Stack.Screen name="ViewItem" component={ViewItemScreen} />
+        <Stack.Screen name="EditItem" component={EditItemScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

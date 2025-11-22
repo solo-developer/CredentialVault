@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native";
 
 interface Item {
   id: string;
@@ -15,6 +17,7 @@ interface Item {
 const FolderItemsScreen = ({ route }: any) => {
   const { folderId, folderName } = route.params;
   const [items, setItems] = useState<Item[]>([]);
+  const navigation = useNavigation<any>();
 
   useEffect(() => {
     const loadItems = async () => {
@@ -24,24 +27,57 @@ const FolderItemsScreen = ({ route }: any) => {
       setItems(filteredItems);
     };
 
-    loadItems();
+    const unsubscribe = navigation.addListener("focus", loadItems);
+    loadItems(); // initial load
+
+    return unsubscribe;
   }, [folderId]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{folderName}</Text>
+
       {items.length === 0 ? (
         <Text style={styles.noItemsText}>No items in this folder.</Text>
       ) : (
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingBottom: 20 }}
           renderItem={({ item }) => (
             <View style={styles.itemRow}>
+              {/* Item Name */}
               <Text style={styles.itemName}>{item.name}</Text>
+
+              {/* Action icons */}
+              <View style={styles.actions}>
+                {/* View */}
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("ViewItem", {
+                      itemId: item.id,
+                      item,
+                    })
+                  }
+                >
+                  <Ionicons name="eye-outline" size={24} color="#007bff" />
+                </TouchableOpacity>
+
+                {/* Edit */}
+                <TouchableOpacity
+                  style={{ marginLeft: 18 }}
+                  onPress={() =>
+                    navigation.navigate("EditItem", {
+                      itemId: item.id,
+                      item,
+                    })
+                  }
+                >
+                  <Ionicons name="create-outline" size={24} color="#28a745" />
+                </TouchableOpacity>
+              </View>
             </View>
           )}
-          contentContainerStyle={{ paddingBottom: 20 }}
         />
       )}
     </View>
@@ -58,8 +94,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 8,
     elevation: 2,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   itemName: { fontSize: 16, color: "#333" },
+
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 });
 
 export default FolderItemsScreen;
