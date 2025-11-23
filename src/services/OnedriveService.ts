@@ -7,7 +7,6 @@ const TOKEN_KEY = "onedrive_token";
 const REFRESH_KEY = "onedrive_refresh";
 
 export async function loginToOneDrive() {
-    debugger;
   const result = await authorize(oneDriveConfig);
 
   await AsyncStorage.setItem(TOKEN_KEY, result.accessToken);

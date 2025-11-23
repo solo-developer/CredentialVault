@@ -16,8 +16,8 @@ export default function SettingsScreen() {
     try {
       await loginToOneDrive();
       Alert.alert("Connected", "Your OneDrive account is linked.");
-    } catch(ex) {
-      Alert.alert("Error", "Could not connect to OneDrive.");
+    } catch(ex : any) {
+      Alert.alert("Error", ex.message);
     }
   };
 

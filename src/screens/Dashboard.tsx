@@ -11,7 +11,7 @@ import { Alert } from "react-native";
 
 const Tab = createBottomTabNavigator();
 
-export default function Dashboard({ navigation }) {
+export default function Dashboard({ navigation }:any) {
   const [showMenu, setShowMenu] = useState(false);
   const [folderModalVisible, setFolderModalVisible] = useState(false);
   const [folderName, setFolderName] = useState("");

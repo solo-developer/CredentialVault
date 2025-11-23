@@ -1,5 +1,5 @@
 export const oneDriveConfig = {
-  clientId: "668bde74-a6c1-4825-b6cc-4fc9cb05697b",
+  clientId: "a720470f-3893-441b-ba48-81aa16e9027d",
   redirectUrl: "msauth.com.credentialvault://auth",
   scopes: [
     "offline_access",
