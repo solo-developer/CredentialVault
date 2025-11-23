@@ -1,19 +1,31 @@
+// services/OneDriveService.ts
 import { authorize, refresh } from "react-native-app-auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as RNFS from "react-native-fs";
 import { oneDriveConfig } from "./AuthConfig";
 import { BackupData } from "./LocalBackupService";
 
+
+const BACKUP_FILENAME = "credentialvault-backup.json";
 const TOKEN_KEY = "onedrive_token";
 const REFRESH_KEY = "onedrive_refresh";
 
-export async function loginToOneDrive() {
-  const result = await authorize(oneDriveConfig);
+export const loginOneDrive = async () => {
+  const authState = await authorize(oneDriveConfig);
+  await AsyncStorage.setItem("onedrive_auth", JSON.stringify(authState));
+   await AsyncStorage.setItem(TOKEN_KEY, authState.accessToken);
+  await AsyncStorage.setItem(REFRESH_KEY, authState.refreshToken ?? "");
+  return authState;
+};
 
-  await AsyncStorage.setItem(TOKEN_KEY, result.accessToken);
-  await AsyncStorage.setItem(REFRESH_KEY, result.refreshToken ?? "");
+export const getSavedTokens = async () => {
+  const data = await AsyncStorage.getItem("onedrive_auth");
+  return data ? JSON.parse(data) : null;
+};
 
-  return result;
-}
+export const saveTokens = async (tokens: any) => {
+  await AsyncStorage.setItem("onedrive_auth", JSON.stringify(tokens));
+};
 
 export async function getValidToken() {
   const refreshToken = await AsyncStorage.getItem(REFRESH_KEY);
@@ -34,7 +46,7 @@ export async function uploadBackup(data: BackupData) {
   if (!token) throw new Error("Not authenticated");
 
   const uploadUrl =
-    "https://graph.microsoft.com/v1.0/me/drive/special/approot:/backup.json:/content";
+    `https://graph.microsoft.com/v1.0/me/drive/special/approot:/${BACKUP_FILENAME}:/content`;
 
   const res = await fetch(uploadUrl, {
     method: "PUT",
@@ -48,18 +60,26 @@ export async function uploadBackup(data: BackupData) {
   if (!res.ok) throw new Error("Upload failed");
 }
 
-export async function downloadBackup(): Promise<BackupData> {
-  const token = await getValidToken();
-  if (!token) throw new Error("Not authenticated");
+export const downloadBackupFile = async () => {
+  const tokens = await getSavedTokens();
+  if (!tokens) throw "Not connected to OneDrive";
 
-  const url =
-    "https://graph.microsoft.com/v1.0/me/drive/special/approot:/backup.json:/content";
+  const downloadUrl =
+    "https://graph.microsoft.com/v1.0/me/drive/special/approot:/" +
+    BACKUP_FILENAME +
+    ":/content";
 
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
+  const response = await fetch(downloadUrl, {
+    headers: { Authorization: `Bearer ${tokens.accessToken}` },
   });
 
-  if (!res.ok) throw new Error("No backup found");
+  if (!response.ok) throw "File not found in OneDrive";
 
-  return await res.json();
-}
+  const text = await response.text();
+
+  // Save to Downloads folder (Android)
+  const path = `${RNFS.DownloadDirectoryPath}/${BACKUP_FILENAME}`;
+  await RNFS.writeFile(path, text, "utf8");
+
+  return path;
+};

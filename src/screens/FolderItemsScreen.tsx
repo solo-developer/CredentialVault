@@ -93,6 +93,12 @@ const FolderItemsScreen = ({ route }: any) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#f8f9fa" },
+  header: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 16,
+  justifyContent: "space-between",
+},
   title: { fontSize: 20, fontWeight: "bold", flexDirection:"row" },
   noItemsText: { fontSize: 16, color: "#666", textAlign: "center", marginTop: 20 },
   itemRow: {
@@ -111,12 +117,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  header: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 16,
-  justifyContent: "space-between",
-},
+  
 
 });
 
