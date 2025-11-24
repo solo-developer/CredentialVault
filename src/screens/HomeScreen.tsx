@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
+import { useRoute } from "@react-navigation/native";
 
 interface Folder {
   id: string;
@@ -25,19 +26,25 @@ interface Item {
 }
 
 const HomeScreen = ({ navigation }: any) => {
+  const route = useRoute();
+  
   const [folders, setFolders] = useState<Folder[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const loadData = async () => {
+        const storedFolders = await AsyncStorage.getItem("folders");
+        const storedItems = await AsyncStorage.getItem("items");
 
+        setFolders(storedFolders ? JSON.parse(storedFolders) : []);
+        setItems(storedItems ? JSON.parse(storedItems) : []);
+      };
   useEffect(() => {
-    const loadData = async () => {
-      const storedFolders = await AsyncStorage.getItem("folders");
-      const storedItems = await AsyncStorage.getItem("items");
-
-      setFolders(storedFolders ? JSON.parse(storedFolders) : []);
-      setItems(storedItems ? JSON.parse(storedItems) : []);
-    };
+    
     loadData();
   }, []);
+
+  useEffect(() => {
+        loadData();
+      }, [route.params?.refresh]);
 
   const getItemCount = (folderId: string) => {
     return items.filter((item) => item.folderId === folderId).length;
