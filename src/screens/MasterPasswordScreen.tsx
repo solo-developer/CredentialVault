@@ -7,13 +7,16 @@ import {
   Alert,
   StyleSheet,
   KeyboardAvoidingView,
+  Image,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { GlobalStyles } from "../styles/global";
 
 const MasterPasswordSetup: React.FC = () => {
-   const navigation = useNavigation<any>();
+  const navigation = useNavigation<any>();
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,6 +26,7 @@ const MasterPasswordSetup: React.FC = () => {
     const checkFirstLaunch = async () => {
       const storedPassword = await AsyncStorage.getItem('@master_password');
       const storedUsername = await AsyncStorage.getItem('@username');
+
       if (!storedPassword || !storedUsername) {
         setIsFirstLaunch(true);
       } else {
@@ -43,12 +47,14 @@ const MasterPasswordSetup: React.FC = () => {
     }
     await AsyncStorage.setItem('@master_password', password);
     await AsyncStorage.setItem('@username', username.trim());
+
     navigation.replace('Dashboard');
   };
 
   const handleLogin = async () => {
     const storedPassword = await AsyncStorage.getItem('@master_password');
     const storedUsername = await AsyncStorage.getItem('@username');
+
     if (username.trim() === storedUsername && password === storedPassword) {
       navigation.replace('Dashboard');
     } else {
@@ -56,47 +62,64 @@ const MasterPasswordSetup: React.FC = () => {
     }
   };
 
-  if (isFirstLaunch === null) return null; // wait for AsyncStorage check
+  if (isFirstLaunch === null) return null;
 
   return (
-    <KeyboardAvoidingView style={GlobalStyles.loginContainer} behavior="padding">
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={styles.container}
+    >
+      {/* Logo */}
+      <Image
+        source={require('../assets/icon.png')} 
+        style={styles.logo}
+      />
+
+      {/* Title */}
       <Text style={styles.title}>
-        {isFirstLaunch ? 'Setup Master Password' : 'Login'}
+        {isFirstLaunch ? "Setup Master Password" : "Welcome Back"}
       </Text>
-
-      <TextInput
-        placeholder="Username"
-        style={GlobalStyles.inputMd}
-        value={username}
-        onChangeText={setUsername}
-      />
-
-      <TextInput
-        placeholder="Master Password"
-        style={GlobalStyles.inputMd}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      {isFirstLaunch && (
+     <Text style={styles.subtext}>
+        Please enter the details below to continue
+      </Text>
+      <View style={styles.formContainer}>
         <TextInput
-          placeholder="Confirm Password"
+          placeholder="Username"
           style={GlobalStyles.inputMd}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
+          value={username}
+          onChangeText={setUsername}
         />
-      )}
 
-      <TouchableOpacity
-        style={GlobalStyles.btnPrimary}
-        onPress={isFirstLaunch ? handleSetup : handleLogin}
-      >
-        <Text style={GlobalStyles.buttonText}>
-          {isFirstLaunch ? 'Set Password' : 'Login'}
-        </Text>
-      </TouchableOpacity>
+        <TextInput
+          placeholder="Master Password"
+          style={GlobalStyles.inputMd}
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+
+        {isFirstLaunch && (
+          <TextInput
+            placeholder="Confirm Password"
+            style={GlobalStyles.inputMd}
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+        )}
+
+        <TouchableOpacity
+          style={GlobalStyles.btnPrimary}
+          onPress={isFirstLaunch ? handleSetup : handleLogin}
+        >
+          <Text style={GlobalStyles.buttonText}>
+            {isFirstLaunch ? "Create Password" : "Login"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Footer */}
+      <Text style={styles.footerText}>with love from<Text style={{ fontWeight: "bold" }}> solo-developer ❤️</Text></Text>
     </KeyboardAvoidingView>
   );
 };
@@ -104,10 +127,39 @@ const MasterPasswordSetup: React.FC = () => {
 export default MasterPasswordSetup;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    paddingHorizontal: 30,
+  },
+  logo: {
+    width: 110,
+    height: 110,
+    alignSelf: "center",
+    marginBottom: 20,
+    borderRadius: 100,
+  },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 40,
+    fontSize: 26,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 20,
+    color: "#222222",
+  },
+  formContainer: {
+    width: "100%",
+    gap: 15,
+  },
+  footerText: {
+    textAlign: "center",
+    marginTop: 60,
+    fontSize: 12,
+    color: "#777",
+  },
+  subtext: {
+    fontSize: 12,
+    color: 'gray',
     textAlign: 'center',
-  },  
+  },
 });
