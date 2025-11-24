@@ -12,15 +12,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 
-type RootStackParamList = {
-  MasterPasswordSetup: undefined;
-  HomeScreen: undefined;
-};
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'MasterPasswordSetup'>;
 
 const MasterPasswordSetup: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
+   const navigation = useNavigation<any>();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -50,7 +44,7 @@ const MasterPasswordSetup: React.FC = () => {
     }
     await AsyncStorage.setItem('@master_password', password);
     await AsyncStorage.setItem('@username', username.trim());
-    navigation.replace('HomeScreen');
+    navigation.replace('Dashboard');
   };
 
   const handleLogin = async () => {
