@@ -9,21 +9,10 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 import { useRoute } from "@react-navigation/native";
+import Item from "../types/Item";
+import Folder from "../types/Folder";
 
-interface Folder {
-  id: string;
-  name: string;
-}
 
-interface Item {
-  id: string;
-  folderId: string;
-  name: string;
-  username: string;
-  password: string;
-  url: string;
-  customFields: any[];
-}
 
 const HomeScreen = ({ navigation }: any) => {
   const route = useRoute();
