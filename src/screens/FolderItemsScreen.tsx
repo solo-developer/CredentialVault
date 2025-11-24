@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import { GlobalStyles } from "../styles/global";
 
 interface Item {
   id: string;
@@ -34,13 +35,13 @@ const FolderItemsScreen = ({ route }: any) => {
   }, [folderId]);
 
   return (
-    <View style={styles.container}>
-     <View style={styles.header}>
+    <View style={GlobalStyles.container}>
+     <View style={GlobalStyles.navHeader}>
      <TouchableOpacity onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={26} color="#333" />
      </TouchableOpacity>
 
-      <Text style={styles.title}>{folderName}</Text>
+      <Text style={GlobalStyles.title}>{folderName}</Text>
       <View style={{ width: 26 }} /> 
     </View>
 
@@ -57,7 +58,7 @@ const FolderItemsScreen = ({ route }: any) => {
               <Text style={styles.itemName}>{item.name}</Text>
 
               {/* Action icons */}
-              <View style={styles.actions}>
+              <View style={GlobalStyles.flexActions}>
                 {/* View */}
                 <TouchableOpacity
                   onPress={() =>
@@ -92,14 +93,7 @@ const FolderItemsScreen = ({ route }: any) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#f8f9fa" },
-  header: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 16,
-  justifyContent: "space-between",
-},
-  title: { fontSize: 20, fontWeight: "bold", flexDirection:"row" },
+
   noItemsText: { fontSize: 16, color: "#666", textAlign: "center", marginTop: 20 },
   itemRow: {
     padding: 12,
@@ -112,12 +106,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   itemName: { fontSize: 16, color: "#333" },
-
-  actions: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  
 
 });
 

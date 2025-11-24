@@ -7,7 +7,7 @@ import HomeScreen from "./HomeScreen";
 import SettingsScreen from "./SettingsScreen";
 import { addFolder } from "../services/FolderService";
 import { Alert } from "react-native";
-
+import { GlobalStyles } from "../styles/global";
 
 const Tab = createBottomTabNavigator();
 
@@ -127,17 +127,17 @@ export default function Dashboard({ navigation }:any) {
 
       {/* Add Folder Modal */}
       <Modal visible={folderModalVisible} transparent animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Create Folder</Text>
+        <View style={GlobalStyles.modalContainer}>
+          <View style={GlobalStyles.modalBox}>
+            <Text style={GlobalStyles.modalTitle}>Create Folder</Text>
             <TextInput
               placeholder="Folder name"
               value={folderName}
               onChangeText={setFolderName}
-              style={styles.input}
+              style={GlobalStyles.inputSm}
             />
 
-            <TouchableOpacity style={styles.saveBtn} onPress={handleAddFolder}>
+            <TouchableOpacity style={GlobalStyles.btnPrimary} onPress={handleAddFolder}>
               <Text style={styles.saveText}>Save</Text>
             </TouchableOpacity>
 
@@ -158,7 +158,6 @@ function Empty() {
   return <View />;
 }
 
-// STYLES
 const styles = StyleSheet.create({
   tabBar: {
     height: 70,
@@ -205,32 +204,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   popupText: { color: "white", marginLeft: 8 },
-
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-    padding: 20,
-  },
-  modalBox: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 10,
-  },
-  modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 15 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 15,
-  },
-  saveBtn: {
-    backgroundColor: "#007bff",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
+  
   saveText: { color: "white", textAlign: "center", fontWeight: "bold" },
   cancelBtn: { padding: 10 },
   cancelText: { textAlign: "center", color: "#555" },

@@ -9,6 +9,7 @@ import {
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GlobalStyles } from "../styles/global";
 
 interface Folder {
   id: string;
@@ -91,8 +92,8 @@ const AddItemScreen = ({ navigation }: any) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>Select Folder:</Text>
+    <ScrollView contentContainerStyle={GlobalStyles.container}>
+      <Text style={GlobalStyles.label}>Select Folder:</Text>
       <View style={styles.folderContainer}>
         {folders.map((folder) => (
           <TouchableOpacity
@@ -114,50 +115,50 @@ const AddItemScreen = ({ navigation }: any) => {
         ))}
       </View>
 
-      <Text style={styles.label}>Name:</Text>
+      <Text style={GlobalStyles.label}>Name:</Text>
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.inputMd}
         value={name}
         onChangeText={setName}
         placeholder="Item name"
       />
 
-      <Text style={styles.label}>Username:</Text>
+      <Text style={GlobalStyles.label}>Username:</Text>
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.inputSm}
         value={username}
         onChangeText={setUsername}
         placeholder="Username"
       />
 
-      <Text style={styles.label}>Password:</Text>
+      <Text style={GlobalStyles.label}>Password:</Text>
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.inputSm}
         value={password}
         onChangeText={setPassword}
         placeholder="Password"
         secureTextEntry
       />
 
-      <Text style={styles.label}>URL:</Text>
+      <Text style={GlobalStyles.label}>URL:</Text>
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.inputSm}
         value={url}
         onChangeText={setUrl}
         placeholder="https://example.com"
       />
 
-      <Text style={styles.label}>Custom Fields:</Text>
+      <Text style={GlobalStyles.label}>Custom Fields:</Text>
       {customFields.map((field) => (
         <View key={field.id} style={styles.customFieldContainer}>
           <TextInput
-            style={[styles.input, { flex: 1, marginRight: 5 }]}
+            style={[GlobalStyles.inputSm, { flex: 1, marginRight: 5 }]}
             placeholder="Field Label"
             value={field.label}
             onChangeText={(text) => handleCustomFieldChange(field.id, "label", text)}
           />
           <TextInput
-            style={[styles.input, { flex: 1, marginLeft: 5 }]}
+            style={[GlobalStyles.inputSm, { flex: 1, marginLeft: 5 }]}
             placeholder="Field Value"
             value={field.value}
             onChangeText={(text) => handleCustomFieldChange(field.id, "value", text)}
@@ -165,11 +166,11 @@ const AddItemScreen = ({ navigation }: any) => {
         </View>
       ))}
 
-      <TouchableOpacity style={styles.addButton} onPress={addCustomField}>
+      <TouchableOpacity style={GlobalStyles.btnSuccess} onPress={addCustomField}>
         <Text style={{ color: "#fff" }}>Add Custom Field</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.saveButton} onPress={saveItem}>
+      <TouchableOpacity style={GlobalStyles.btnPrimary} onPress={saveItem}>
         <Text style={{ color: "#fff" }}>Save Item</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -177,21 +178,7 @@ const AddItemScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  label: {
-    fontWeight: "bold",
-    marginTop: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    padding: 8,
-    marginTop: 4,
-  },
+ 
   folderContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -208,21 +195,7 @@ const styles = StyleSheet.create({
   customFieldContainer: {
     flexDirection: "row",
     marginTop: 8,
-  },
-  addButton: {
-    backgroundColor: "#28a745",
-    padding: 12,
-    borderRadius: 6,
-    alignItems: "center",
-    marginTop: 12,
-  },
-  saveButton: {
-    backgroundColor: "#007bff",
-    padding: 12,
-    borderRadius: 6,
-    alignItems: "center",
-    marginTop: 20,
-  },
+  }
 });
 
 export default AddItemScreen;
