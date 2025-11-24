@@ -9,9 +9,8 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-
+import { GlobalStyles } from "../styles/global";
 
 const MasterPasswordSetup: React.FC = () => {
    const navigation = useNavigation<any>();
@@ -60,21 +59,21 @@ const MasterPasswordSetup: React.FC = () => {
   if (isFirstLaunch === null) return null; // wait for AsyncStorage check
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="padding">
+    <KeyboardAvoidingView style={GlobalStyles.loginContainer} behavior="padding">
       <Text style={styles.title}>
         {isFirstLaunch ? 'Setup Master Password' : 'Login'}
       </Text>
 
       <TextInput
         placeholder="Username"
-        style={styles.input}
+        style={GlobalStyles.inputMd}
         value={username}
         onChangeText={setUsername}
       />
 
       <TextInput
         placeholder="Master Password"
-        style={styles.input}
+        style={GlobalStyles.inputMd}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -83,7 +82,7 @@ const MasterPasswordSetup: React.FC = () => {
       {isFirstLaunch && (
         <TextInput
           placeholder="Confirm Password"
-          style={styles.input}
+          style={GlobalStyles.inputMd}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
@@ -91,10 +90,10 @@ const MasterPasswordSetup: React.FC = () => {
       )}
 
       <TouchableOpacity
-        style={styles.button}
+        style={GlobalStyles.btnPrimary}
         onPress={isFirstLaunch ? handleSetup : handleLogin}
       >
-        <Text style={styles.buttonText}>
+        <Text style={GlobalStyles.buttonText}>
           {isFirstLaunch ? 'Set Password' : 'Login'}
         </Text>
       </TouchableOpacity>
@@ -105,35 +104,10 @@ const MasterPasswordSetup: React.FC = () => {
 export default MasterPasswordSetup;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 40,
     textAlign: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#aaa',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-  button: {
-    backgroundColor: '#4a90e2',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  },  
 });
