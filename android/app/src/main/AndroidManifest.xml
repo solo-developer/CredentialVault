@@ -21,12 +21,15 @@
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
-             <action android:name="android.intent.action.VIEW"/>
+        </intent-filter>
+         <!-- MICROSOFT AUTH REDIRECT -->
+        <intent-filter android:autoVerify="true">
+            <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.DEFAULT" />
             <category android:name="android.intent.category.BROWSABLE" />
-            <!-- REPLACE com.your.app with your redirect scheme -->
-            <data android:scheme="msauth.com.credentialvault" android:host="auth"/>
-              <data android:scheme="${appAuthRedirectScheme}" />
+
+            <!-- your redirect scheme -->
+            <data android:scheme="msauth.com.credentialvault" android:host="auth" />
         </intent-filter>
       </activity>
     </application>
