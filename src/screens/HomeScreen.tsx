@@ -15,10 +15,15 @@ import Item from "../types/Item";
 import Folder from "../types/Folder";
 import { GlobalStyles } from "../styles/global";
 import { showConfirmationDialog } from "../components/ConfirmationDialog";
-import { deleteFolder } from "../services/FolderService";
+import { deleteFolder, updateFolderName } from "../services/FolderService";
+import RenameFolderModal from "./RenameFolderModel";
+
+
 
 const HomeScreen = ({ navigation }: any) => {
   const route = useRoute();
+  const [renameVisible, setRenameVisible] = useState(false);
+  const [renameFolder, setRenameFolder] = useState<Folder | null>(null);
 
   const [folders, setFolders] = useState<Folder[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -133,7 +138,8 @@ const HomeScreen = ({ navigation }: any) => {
             <TouchableOpacity
               style={styles.dropdownItem}
               onPress={() => {
-                /* Edit logic goes here */
+                setRenameFolder(menuFolder);
+                setRenameVisible(true);
                 closeMenu();
               }}
             >
@@ -141,8 +147,8 @@ const HomeScreen = ({ navigation }: any) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.dropdownItem}
-              onPress={async () => {
-              await showConfirmationDialog(
+              onPress={ () => {
+               showConfirmationDialog(
                     "Delete folder",
                     "Are you sure to delete this folder? All items inside this folder will be deleted.",
                     "Delete",
@@ -162,6 +168,23 @@ const HomeScreen = ({ navigation }: any) => {
           </View>
         </Pressable>
       )}
+
+      <RenameFolderModal
+          visible={renameVisible}
+          defaultName={renameFolder?.name || ""}
+          onCancel={() => setRenameVisible(false)}
+          onSave={async (newName) => {
+            if (renameFolder && newName.length > 0) {
+              const result = await updateFolderName(renameFolder.id, newName);
+              Alert.alert(result.message);
+              if (result.success) {
+                loadData(); 
+              }
+            }
+            setRenameVisible(false);
+          }}
+      />
+
     </View>
   );
 };

@@ -60,3 +60,33 @@ export async function addFolder(name: string): Promise<{ success: boolean; messa
 
   return { success: true, message: "Folder added" };
 }
+
+export async function updateFolderName(folderId: string, newName: string) {
+  if (!newName || newName.trim().length === 0) {
+    return { success: false, message: "Folder name cannot be empty." };
+  }
+
+  const folders = await getFolders();
+
+  const folderIndex = folders.findIndex(f => f.id === folderId);
+  if (folderIndex === -1) {
+    return { success: false, message: "Folder does not exist." };
+  }
+
+  // Check for duplicate names (optional)
+  const isDuplicate = folders.some(
+    f => f.name.toLowerCase() === newName.toLowerCase() && f.id !== folderId
+  );
+
+  if (isDuplicate) {
+    return { success: false, message: "A folder with this name already exists." };
+  }
+
+  // Update name
+  folders[folderIndex].name = newName.trim();
+
+  // Save to storage
+  await AsyncStorage.setItem(FOLDER_STORAGE_KEY, JSON.stringify(folders));
+
+  return { success: true, message: "Folder renamed successfully." };
+}
