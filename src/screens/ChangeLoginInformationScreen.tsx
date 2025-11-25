@@ -6,17 +6,21 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import bcrypt from 'react-native-bcrypt';
 import { SaveUserInfo } from '../services/AuthenticationService';
 import { CommonActions } from '@react-navigation/native';
+import { GlobalStyles } from '../styles/global';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function ChangeLoginInformationScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false); // loader state
 
   const handleUpdate = async () => {
     if (
@@ -34,47 +38,68 @@ export default function ChangeLoginInformationScreen({ navigation }: any) {
       return;
     }
 
-    const storedUsername = await AsyncStorage.getItem('@username');
-    const storedHashedPassword = await AsyncStorage.getItem('@master_password');
+    try {
+      setLoading(true); // start loader
 
-    // Verify current password
-    if (username.trim() !== storedUsername || !storedHashedPassword) {
-      Alert.alert('Error', 'Invalid username or password');
-      return;
-    }
+      const storedUsername = await AsyncStorage.getItem('@username');
+      const storedHashedPassword = await AsyncStorage.getItem(
+        '@master_password',
+      );
 
-    const match = bcrypt.compareSync(currentPassword, storedHashedPassword);
-    if (!match) {
-      Alert.alert('Error', 'Current password is incorrect');
-      return;
-    }
+      // Verify current password
+      if (username.trim() !== storedUsername || !storedHashedPassword) {
+        setLoading(false);
+        Alert.alert('Error', 'Invalid username or password');
+        return;
+      }
 
-    // Hash new password
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(newPassword, salt);
+      const match = bcrypt.compareSync(currentPassword, storedHashedPassword);
+      if (!match) {
+        setLoading(false);
+        Alert.alert('Error', 'Current password is incorrect');
+        return;
+      }
 
-    await SaveUserInfo(username.trim(), newPassword);
+      // Hash new password
+      const salt = bcrypt.genSaltSync(10);
+      const hashedPassword = bcrypt.hashSync(newPassword, salt);
 
-    Alert.alert('Success', 'Login information updated! Please login again.', [
-      {
-        text: 'OK',
-        onPress: () => {
-          navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{ name: 'MasterPasswordSetup' }], 
-            }),
-          );
+      await SaveUserInfo(username.trim(), newPassword);
+
+      setLoading(false);
+
+      Alert.alert('Success', 'Login information updated! Please login again.', [
+        {
+          text: 'OK',
+          onPress: () => {
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'MasterPasswordSetup' }],
+              }),
+            );
+          },
         },
-      },
-    ]);
+      ]);
+    } catch (err) {
+      setLoading(false);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <View style={GlobalStyles.container}>
+      <View style={GlobalStyles.navHeaderSm}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={26} color="#333" />
+        </TouchableOpacity>
+
+        <Text style={GlobalStyles.title}>Change Login Information</Text>
+        <View style={{ width: 26 }} />
+      </View>
       <Text style={styles.label}>Username:</Text>
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.inputSm}
         value={username}
         onChangeText={setUsername}
         placeholder="Username"
@@ -82,7 +107,7 @@ export default function ChangeLoginInformationScreen({ navigation }: any) {
 
       <Text style={styles.label}>Current Password:</Text>
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.inputSm}
         value={currentPassword}
         onChangeText={setCurrentPassword}
         placeholder="Current Password"
@@ -91,7 +116,7 @@ export default function ChangeLoginInformationScreen({ navigation }: any) {
 
       <Text style={styles.label}>New Password:</Text>
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.inputSm}
         value={newPassword}
         onChangeText={setNewPassword}
         placeholder="New Password"
@@ -100,35 +125,31 @@ export default function ChangeLoginInformationScreen({ navigation }: any) {
 
       <Text style={styles.label}>Confirm New Password:</Text>
       <TextInput
-        style={styles.input}
+        style={GlobalStyles.inputSm}
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         placeholder="Confirm Password"
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.btn} onPress={handleUpdate}>
-        <Text style={styles.btnText}>Update</Text>
+      <TouchableOpacity
+        style={GlobalStyles.btnPrimary}
+        onPress={handleUpdate}
+        disabled={loading} // disable button while loading
+      >
+        {loading ? (
+         <View style={GlobalStyles.loadingContainer}> <ActivityIndicator color="#fff" /><Text style={styles.btnText}> Updating...</Text></View> 
+        ) : (
+          <Text style={styles.btnText}>Update</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#fff' },
   label: { fontSize: 16, marginVertical: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 8,
-  },
-  btn: {
-    backgroundColor: '#007bff',
-    padding: 16,
-    borderRadius: 10,
-    marginTop: 20,
-  },
+
   btnText: { color: '#fff', textAlign: 'center', fontWeight: 'bold' },
+  
 });
