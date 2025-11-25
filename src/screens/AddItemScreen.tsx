@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GlobalStyles } from "../styles/global";
+import Item from "../types/Item";
+import { addItem } from "../services/ItemService";
 
 interface Folder {
   id: string;
@@ -70,10 +72,7 @@ const AddItemScreen = ({ navigation }: any) => {
       return;
     }
 
-    const storedItems = await AsyncStorage.getItem("items");
-    const items = storedItems ? JSON.parse(storedItems) : [];
-
-    const newItem = {
+    const newItem : Item = {
       id: Date.now().toString(),
       folderId: selectedFolder.id,
       name,
@@ -82,8 +81,8 @@ const AddItemScreen = ({ navigation }: any) => {
       url,
       customFields,
     };
+     await addItem(newItem);
 
-    await AsyncStorage.setItem("items", JSON.stringify([...items, newItem]));
     Alert.alert("Item saved!");
     navigation.navigate("Dashboard", {
       screen: "Home",

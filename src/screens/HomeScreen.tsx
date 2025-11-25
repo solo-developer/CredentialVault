@@ -14,6 +14,8 @@ import { useRoute } from "@react-navigation/native";
 import Item from "../types/Item";
 import Folder from "../types/Folder";
 import { GlobalStyles } from "../styles/global";
+import { showConfirmationDialog } from "../components/ConfirmationDialog";
+import { deleteFolder } from "../services/FolderService";
 
 const HomeScreen = ({ navigation }: any) => {
   const route = useRoute();
@@ -139,8 +141,17 @@ const HomeScreen = ({ navigation }: any) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.dropdownItem}
-              onPress={() => {
-                /* Delete logic goes here */
+              onPress={async () => {
+              await showConfirmationDialog(
+                    "Delete folder",
+                    "Are you sure to delete this folder? All items inside this folder will be deleted.",
+                    "Delete",
+                    async () => {
+                   let { success, message}=  await deleteFolder(menuFolder.id);
+                   if(success)
+                      loadData();
+                    }
+                  );
                 closeMenu();
               }}
             >
