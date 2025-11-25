@@ -12,17 +12,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GlobalStyles } from "../styles/global";
 import Item from "../types/Item";
 import { addItem } from "../services/ItemService";
+import Folder from "../types/Folder";
+import CustomField from "../types/CustomField";
+import { FOLDER_STORAGE_KEY } from "../Constants";
 
-interface Folder {
-  id: string;
-  name: string;
-}
 
-interface CustomField {
-  id: string;
-  label: string;
-  value: string;
-}
+
 
 const AddItemScreen = ({ navigation }: any) => {
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -34,8 +29,9 @@ const AddItemScreen = ({ navigation }: any) => {
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
 
   useEffect(() => {
+
     const loadFolders = async () => {
-      const storedFolders = await AsyncStorage.getItem("folders");
+      const storedFolders = await AsyncStorage.getItem(FOLDER_STORAGE_KEY);
       if (storedFolders) {
         const folderArr: Folder[] = JSON.parse(storedFolders);
         setFolders(folderArr);

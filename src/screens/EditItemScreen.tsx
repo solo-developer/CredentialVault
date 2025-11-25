@@ -1,86 +1,200 @@
-// EditItemScreen.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   TouchableOpacity,
+  ScrollView,
+  StyleSheet,
   Alert,
 } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GlobalStyles } from "../styles/global";
+import Item from "../types/Item";
+import { updateItem } from "../services/ItemService";
+import Folder from "../types/Folder";
+import CustomField from "../types/CustomField";
+import { FOLDER_STORAGE_KEY } from "../Constants";
 
-export default function EditItemScreen() {
-  const route = useRoute();
-  const navigation = useNavigation();
-  const { item } = route.params;
+interface EditItemScreenProps {
+  navigation: any;
+  route: {
+    params: {
+      item: Item;
+    };
+  };
+}
 
-  const [name, setName] = useState(item.name);
-  const [username, setUsername] = useState(item.username);
-  const [password, setPassword] = useState(item.password);
-  const [showPassword, setShowPassword] = useState(false);
-  const [url, setUrl] = useState(item.url || "");
+const EditItemScreen: React.FC<EditItemScreenProps> = ({ navigation, route }) => {
+  const existingItem = route.params.item;
 
-  const saveItem = () => {
-    Alert.alert("Updated!", "Item has been updated.");
-    navigation.goBack();
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
+
+  const [name, setName] = useState(existingItem.name);
+  const [username, setUsername] = useState(existingItem.username);
+  const [password, setPassword] = useState(existingItem.password);
+  const [url, setUrl] = useState(existingItem.url);
+  const [customFields, setCustomFields] = useState<CustomField[]>(existingItem.customFields || []);
+
+  useEffect(() => {
+    const loadFolders = async () => {
+      const storedFolders = await AsyncStorage.getItem(FOLDER_STORAGE_KEY);
+      if (storedFolders) {
+        const folderArr: Folder[] = JSON.parse(storedFolders);
+        setFolders(folderArr);
+
+        const initialFolder = folderArr.find(f => f.id === existingItem.folderId);
+        if (initialFolder) setSelectedFolder(initialFolder);
+      }
+    };
+    loadFolders();
+  }, []);
+
+  const addCustomField = () => {
+    const newField: CustomField = {
+      id: Date.now().toString(),
+      label: "",
+      value: "",
+    };
+    setCustomFields([...customFields, newField]);
+  };
+
+  const handleCustomFieldChange = (id: string, key: "label" | "value", text: string) => {
+    setCustomFields(prev =>
+      prev.map(field => field.id === id ? { ...field, [key]: text } : field)
+    );
+  };
+
+  const saveChanges = async () => {
+    if (!selectedFolder) {
+      Alert.alert("Please select a folder");
+      return;
+    }
+    if (!name) {
+      Alert.alert("Please enter item name");
+      return;
+    }
+
+    const updatedItem: Item = {
+      ...existingItem,
+      folderId: selectedFolder.id,
+      name,
+      username,
+      password,
+      url,
+      customFields,
+    };
+
+    await updateItem(updatedItem);
+
+    Alert.alert("Item updated!");
+    navigation.navigate("Dashboard", {
+      screen: "Home",
+      params: { refresh: Date.now() },
+    });
   };
 
   return (
-    <View style={GlobalStyles.container}>
-        <View style={GlobalStyles.navHeader}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={26} color="#333" />
-                </TouchableOpacity>
-        
-                <Text style={GlobalStyles.navTitle}>Edit Item</Text>
-                <View style={{ width: 26 }} />
-              </View>
-
-      <Text style={GlobalStyles.label}>Item Name</Text>
-      <TextInput value={name} onChangeText={setName} style={GlobalStyles.inputSm} />
-
-      <Text style={GlobalStyles.label}>Username</Text>
-      <TextInput value={username} onChangeText={setUsername} style={GlobalStyles.inputSm} />
-
-      <Text style={GlobalStyles.label}>Password</Text>
-      <View style={styles.passwordRow}>
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          style={[GlobalStyles.inputSm, { flex: 1 }]}
-        />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <Ionicons
-            name={showPassword ? "eye-off-outline" : "eye-outline"}
-            size={26}
-            color="#007bff"
-          />
-        </TouchableOpacity>
+    <ScrollView contentContainerStyle={GlobalStyles.container}>
+      <Text style={GlobalStyles.label}>Select Folder:</Text>
+      <View style={styles.folderContainer}>
+        {folders.map(folder => (
+          <TouchableOpacity
+            key={folder.id}
+            style={[
+              styles.folderButton,
+              selectedFolder?.id === folder.id && { backgroundColor: "#007bff" },
+            ]}
+            onPress={() => setSelectedFolder(folder)}
+          >
+            <Text style={{ color: selectedFolder?.id === folder.id ? "#fff" : "#000" }}>
+              {folder.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      <Text style={GlobalStyles.label}>URL</Text>
-      <TextInput value={url} onChangeText={setUrl} style={GlobalStyles.inputSm} />
+      <Text style={GlobalStyles.label}>Name:</Text>
+      <TextInput
+        style={GlobalStyles.inputMd}
+        value={name}
+        onChangeText={setName}
+        placeholder="Item name"
+      />
 
-      <TouchableOpacity style={GlobalStyles.btnPrimary} onPress={saveItem}>
-        <Text style={styles.saveText}>Save Changes</Text>
+      <Text style={GlobalStyles.label}>Username:</Text>
+      <TextInput
+        style={GlobalStyles.inputSm}
+        value={username}
+        onChangeText={setUsername}
+        placeholder="Username"
+      />
+
+      <Text style={GlobalStyles.label}>Password:</Text>
+      <TextInput
+        style={GlobalStyles.inputSm}
+        value={password}
+        onChangeText={setPassword}
+        placeholder="Password"
+        secureTextEntry
+      />
+
+      <Text style={GlobalStyles.label}>URL:</Text>
+      <TextInput
+        style={GlobalStyles.inputSm}
+        value={url}
+        onChangeText={setUrl}
+        placeholder="https://example.com"
+      />
+
+      <Text style={GlobalStyles.label}>Custom Fields:</Text>
+      {customFields.map(field => (
+        <View key={field.id} style={styles.customFieldContainer}>
+          <TextInput
+            style={[GlobalStyles.inputSm, { flex: 1, marginRight: 5 }]}
+            placeholder="Field Label"
+            value={field.label}
+            onChangeText={text => handleCustomFieldChange(field.id, "label", text)}
+          />
+          <TextInput
+            style={[GlobalStyles.inputSm, { flex: 1, marginLeft: 5 }]}
+            placeholder="Field Value"
+            value={field.value}
+            onChangeText={text => handleCustomFieldChange(field.id, "value", text)}
+          />
+        </View>
+      ))}
+
+      <TouchableOpacity style={GlobalStyles.btnSuccess} onPress={addCustomField}>
+        <Text style={{ color: "#fff" }}>Add Custom Field</Text>
       </TouchableOpacity>
-    </View>
-  );
-}
 
-const styles = StyleSheet.create({ 
- 
-  passwordRow: {
+      <TouchableOpacity style={GlobalStyles.btnPrimary} onPress={saveChanges}>
+        <Text style={{ color: "#fff" }}>Save Changes</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  folderContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    flexWrap: "wrap",
+    marginTop: 8,
   },
-  saveText: {
-    color: "#fff",
-    textAlign: "center",
-    fontSize: 16,
-  }
+  folderButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: "#eee",
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  customFieldContainer: {
+    flexDirection: "row",
+    marginTop: 8,
+  },
 });
+
+export default EditItemScreen;
