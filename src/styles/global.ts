@@ -100,4 +100,15 @@ export const GlobalStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  emptyContainer: {
+
+    justifyContent: "center",
+    alignItems: "center",
+    flex : 1
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#675b5bff",
+    textAlign: "center",
+  },
 });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+  ActivityIndicator,
   View,
   Text,
   TextInput,
@@ -12,13 +13,13 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { GlobalStyles } from "../styles/global";
+import { GlobalStyles } from '../styles/global';
 import { MASTER_PASSWORD_KEY, MASTER_USERNAME_KEY } from '../Constants';
 import { SaveUserInfo, verifyUser } from '../services/AuthenticationService';
 
 const MasterPasswordSetup: React.FC = () => {
   const navigation = useNavigation<any>();
-
+  const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -47,13 +48,16 @@ const MasterPasswordSetup: React.FC = () => {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
-    await SaveUserInfo(username,password);
+    setLoading(true);
+    await SaveUserInfo(username, password);
+    setLoading(false);
     navigation.replace('Dashboard');
   };
 
   const handleLogin = async () => {
-    let isUserValid =await verifyUser(username,password);
-
+    setLoading(true);
+    let isUserValid = await verifyUser(username, password);
+    setLoading(false);
     if (isUserValid) {
       navigation.replace('Dashboard');
     } else {
@@ -65,20 +69,17 @@ const MasterPasswordSetup: React.FC = () => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
       {/* Logo */}
-      <Image
-        source={require('../assets/icon.png')} 
-        style={styles.logo}
-      />
+      <Image source={require('../assets/icon.png')} style={styles.logo} />
 
       {/* Title */}
       <Text style={styles.title}>
-        {isFirstLaunch ? "Setup Master Password" : "Welcome Back"}
+        {isFirstLaunch ? 'Setup Master Password' : 'Welcome Back'}
       </Text>
-     <Text style={styles.subtext}>
+      <Text style={styles.subtext}>
         Please enter the details below to continue
       </Text>
       <View style={styles.formContainer}>
@@ -110,15 +111,34 @@ const MasterPasswordSetup: React.FC = () => {
         <TouchableOpacity
           style={GlobalStyles.btnPrimary}
           onPress={isFirstLaunch ? handleSetup : handleLogin}
+          disabled={loading} // disable button while loading
         >
-          <Text style={GlobalStyles.buttonText}>
-            {isFirstLaunch ? "Create Password" : "Login"}
-          </Text>
+          {loading ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <ActivityIndicator color="#fff" />
+              <Text style={[GlobalStyles.buttonText, { marginLeft: 10 }]}>
+                {isFirstLaunch ? 'Creating...' : 'Logging in...'}
+              </Text>
+            </View>
+          ) : (
+            <Text style={GlobalStyles.buttonText}>
+              {isFirstLaunch ? 'Create Password' : 'Login'}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 
       {/* Footer */}
-      <Text style={styles.footerText}>with love from<Text style={{ fontWeight: "bold" }}> solo-developer ❤️</Text></Text>
+      <Text style={styles.footerText}>
+        Made with love by
+        <Text style={{ fontWeight: 'bold' }}> solo-developer ❤️</Text>
+      </Text>
     </KeyboardAvoidingView>
   );
 };
@@ -128,33 +148,33 @@ export default MasterPasswordSetup;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
     paddingHorizontal: 30,
   },
   logo: {
     width: 110,
     height: 110,
-    alignSelf: "center",
+    alignSelf: 'center',
     marginBottom: 20,
     borderRadius: 100,
   },
   title: {
     fontSize: 26,
-    fontWeight: "600",
-    textAlign: "center",
+    fontWeight: '600',
+    textAlign: 'center',
     marginBottom: 20,
-    color: "#222222",
+    color: '#222222',
   },
   formContainer: {
-    width: "100%",
+    width: '100%',
     gap: 15,
   },
   footerText: {
-    textAlign: "center",
+    textAlign: 'center',
     marginTop: 60,
     fontSize: 12,
-    color: "#777",
+    color: '#777',
   },
   subtext: {
     fontSize: 12,

@@ -119,12 +119,20 @@ const HomeScreen = ({ navigation }: any) => {
   return (
     <View style={GlobalStyles.container}>
       <Text style={styles.header}>Folders</Text>
+     {folders.length === 0 ? (
+      <View style={GlobalStyles.emptyContainer}>
+        <Text style={GlobalStyles.emptyText}>
+          No folders yet. Start by creating your first folder!
+        </Text>
+      </View>
+    ) : (
       <FlatList
         data={folders}
         keyExtractor={(item) => item.id + "_" + item.name}
         renderItem={renderFolder}
         contentContainerStyle={{ paddingBottom: 20 }}
       />
+    )}
 
       {/* Floating dropdown */}
       {menuVisible && menuFolder && (
