@@ -102,7 +102,7 @@ const HomeScreen = ({ navigation }: any) => {
         }}
       >
         <Text style={styles.folderName}>{item.name}</Text>
-        <Text style={styles.itemCount}>{getItemCount(item.id)}</Text>
+        <Text style={styles.itemCount}>{ getItemCount(item.id) + " items"}</Text>
       </TouchableOpacity>
 
       {/* Three-dot button */}

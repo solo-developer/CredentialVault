@@ -13,6 +13,8 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { GlobalStyles } from "../styles/global";
+import { MASTER_PASSWORD_KEY, MASTER_USERNAME_KEY } from '../Constants';
+import { SaveUserInfo, verifyUser } from '../services/AuthenticationService';
 
 const MasterPasswordSetup: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -24,8 +26,8 @@ const MasterPasswordSetup: React.FC = () => {
 
   useEffect(() => {
     const checkFirstLaunch = async () => {
-      const storedPassword = await AsyncStorage.getItem('@master_password');
-      const storedUsername = await AsyncStorage.getItem('@username');
+      const storedPassword = await AsyncStorage.getItem(MASTER_PASSWORD_KEY);
+      const storedUsername = await AsyncStorage.getItem(MASTER_USERNAME_KEY);
 
       if (!storedPassword || !storedUsername) {
         setIsFirstLaunch(true);
@@ -45,17 +47,14 @@ const MasterPasswordSetup: React.FC = () => {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
-    await AsyncStorage.setItem('@master_password', password);
-    await AsyncStorage.setItem('@username', username.trim());
-
+    await SaveUserInfo(username,password);
     navigation.replace('Dashboard');
   };
 
   const handleLogin = async () => {
-    const storedPassword = await AsyncStorage.getItem('@master_password');
-    const storedUsername = await AsyncStorage.getItem('@username');
+    let isUserValid =await verifyUser(username,password);
 
-    if (username.trim() === storedUsername && password === storedPassword) {
+    if (isUserValid) {
       navigation.replace('Dashboard');
     } else {
       Alert.alert('Error', 'Invalid username or password');
