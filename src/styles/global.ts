@@ -89,9 +89,5 @@ export const GlobalStyles = StyleSheet.create({
     borderRadius: 10,
   },
   modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 15 },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,14 +7,15 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
-} from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { GlobalStyles } from "../styles/global";
-import Item from "../types/Item";
-import { updateItem } from "../services/ItemService";
-import Folder from "../types/Folder";
-import CustomField from "../types/CustomField";
-import { FOLDER_STORAGE_KEY } from "../Constants";
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GlobalStyles } from '../styles/global';
+import Item from '../types/Item';
+import { updateItem } from '../services/ItemService';
+import Folder from '../types/Folder';
+import CustomField from '../types/CustomField';
+import { FOLDER_STORAGE_KEY } from '../Constants';
+import { getFolders } from '../services/FolderService';
 
 interface EditItemScreenProps {
   navigation: any;
@@ -25,7 +26,10 @@ interface EditItemScreenProps {
   };
 }
 
-const EditItemScreen: React.FC<EditItemScreenProps> = ({ navigation, route }) => {
+const EditItemScreen: React.FC<EditItemScreenProps> = ({
+  navigation,
+  route,
+}) => {
   const existingItem = route.params.item;
 
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -35,18 +39,20 @@ const EditItemScreen: React.FC<EditItemScreenProps> = ({ navigation, route }) =>
   const [username, setUsername] = useState(existingItem.username);
   const [password, setPassword] = useState(existingItem.password);
   const [url, setUrl] = useState(existingItem.url);
-  const [customFields, setCustomFields] = useState<CustomField[]>(existingItem.customFields || []);
+  const [customFields, setCustomFields] = useState<CustomField[]>(
+    existingItem.customFields || [],
+  );
 
   useEffect(() => {
     const loadFolders = async () => {
-      const storedFolders = await AsyncStorage.getItem(FOLDER_STORAGE_KEY);
-      if (storedFolders) {
-        const folderArr: Folder[] = JSON.parse(storedFolders);
-        setFolders(folderArr);
+      const storedFolders = await getFolders();
 
-        const initialFolder = folderArr.find(f => f.id === existingItem.folderId);
-        if (initialFolder) setSelectedFolder(initialFolder);
-      }
+      setFolders(storedFolders);
+
+      const initialFolder = storedFolders.find(
+        f => f.id === existingItem.folderId,
+      );
+      if (initialFolder) setSelectedFolder(initialFolder);
     };
     loadFolders();
   }, []);
@@ -54,25 +60,29 @@ const EditItemScreen: React.FC<EditItemScreenProps> = ({ navigation, route }) =>
   const addCustomField = () => {
     const newField: CustomField = {
       id: Date.now().toString(),
-      label: "",
-      value: "",
+      label: '',
+      value: '',
     };
     setCustomFields([...customFields, newField]);
   };
 
-  const handleCustomFieldChange = (id: string, key: "label" | "value", text: string) => {
+  const handleCustomFieldChange = (
+    id: string,
+    key: 'label' | 'value',
+    text: string,
+  ) => {
     setCustomFields(prev =>
-      prev.map(field => field.id === id ? { ...field, [key]: text } : field)
+      prev.map(field => (field.id === id ? { ...field, [key]: text } : field)),
     );
   };
 
   const saveChanges = async () => {
     if (!selectedFolder) {
-      Alert.alert("Please select a folder");
+      Alert.alert('Please select a folder');
       return;
     }
     if (!name) {
-      Alert.alert("Please enter item name");
+      Alert.alert('Please enter item name');
       return;
     }
 
@@ -88,9 +98,9 @@ const EditItemScreen: React.FC<EditItemScreenProps> = ({ navigation, route }) =>
 
     await updateItem(updatedItem);
 
-    Alert.alert("Item updated!");
-    navigation.navigate("Dashboard", {
-      screen: "Home",
+    Alert.alert('Item updated!');
+    navigation.navigate('Dashboard', {
+      screen: 'Home',
       params: { refresh: Date.now() },
     });
   };
@@ -104,11 +114,17 @@ const EditItemScreen: React.FC<EditItemScreenProps> = ({ navigation, route }) =>
             key={folder.id}
             style={[
               styles.folderButton,
-              selectedFolder?.id === folder.id && { backgroundColor: "#007bff" },
+              selectedFolder?.id === folder.id && {
+                backgroundColor: '#007bff',
+              },
             ]}
             onPress={() => setSelectedFolder(folder)}
           >
-            <Text style={{ color: selectedFolder?.id === folder.id ? "#fff" : "#000" }}>
+            <Text
+              style={{
+                color: selectedFolder?.id === folder.id ? '#fff' : '#000',
+              }}
+            >
               {folder.name}
             </Text>
           </TouchableOpacity>
@@ -155,23 +171,30 @@ const EditItemScreen: React.FC<EditItemScreenProps> = ({ navigation, route }) =>
             style={[GlobalStyles.inputSm, { flex: 1, marginRight: 5 }]}
             placeholder="Field Label"
             value={field.label}
-            onChangeText={text => handleCustomFieldChange(field.id, "label", text)}
+            onChangeText={text =>
+              handleCustomFieldChange(field.id, 'label', text)
+            }
           />
           <TextInput
             style={[GlobalStyles.inputSm, { flex: 1, marginLeft: 5 }]}
             placeholder="Field Value"
             value={field.value}
-            onChangeText={text => handleCustomFieldChange(field.id, "value", text)}
+            onChangeText={text =>
+              handleCustomFieldChange(field.id, 'value', text)
+            }
           />
         </View>
       ))}
 
-      <TouchableOpacity style={GlobalStyles.btnSuccess} onPress={addCustomField}>
-        <Text style={{ color: "#fff" }}>Add Custom Field</Text>
+      <TouchableOpacity
+        style={GlobalStyles.btnSuccess}
+        onPress={addCustomField}
+      >
+        <Text style={{ color: '#fff' }}>Add Custom Field</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={GlobalStyles.btnPrimary} onPress={saveChanges}>
-        <Text style={{ color: "#fff" }}>Save Changes</Text>
+        <Text style={{ color: '#fff' }}>Save Changes</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -179,20 +202,20 @@ const EditItemScreen: React.FC<EditItemScreenProps> = ({ navigation, route }) =>
 
 const styles = StyleSheet.create({
   folderContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     marginTop: 8,
   },
   folderButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
-    backgroundColor: "#eee",
+    backgroundColor: '#eee',
     marginRight: 8,
     marginBottom: 8,
   },
   customFieldContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginTop: 8,
   },
 });

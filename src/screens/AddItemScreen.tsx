@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,36 +7,31 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
-} from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { GlobalStyles } from "../styles/global";
-import Item from "../types/Item";
-import { addItem } from "../services/ItemService";
-import Folder from "../types/Folder";
-import CustomField from "../types/CustomField";
-import { FOLDER_STORAGE_KEY } from "../Constants";
-
-
-
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GlobalStyles } from '../styles/global';
+import Item from '../types/Item';
+import { addItem } from '../services/ItemService';
+import Folder from '../types/Folder';
+import CustomField from '../types/CustomField';
+import { FOLDER_STORAGE_KEY } from '../Constants';
+import { getFolders } from '../services/FolderService';
 
 const AddItemScreen = ({ navigation }: any) => {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
-  const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [url, setUrl] = useState("");
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [url, setUrl] = useState('');
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
 
   useEffect(() => {
-
     const loadFolders = async () => {
-      const storedFolders = await AsyncStorage.getItem(FOLDER_STORAGE_KEY);
-      if (storedFolders) {
-        const folderArr: Folder[] = JSON.parse(storedFolders);
-        setFolders(folderArr);
-        if (folderArr.length > 0) setSelectedFolder(folderArr[0]);
-      }
+      const storedFolders = await getFolders();
+
+      setFolders(storedFolders);
+      if (storedFolders.length > 0) setSelectedFolder(storedFolders[0]);
     };
     loadFolders();
   }, []);
@@ -44,31 +39,33 @@ const AddItemScreen = ({ navigation }: any) => {
   const addCustomField = () => {
     const newField: CustomField = {
       id: Date.now().toString(),
-      label: "",
-      value: "",
+      label: '',
+      value: '',
     };
     setCustomFields([...customFields, newField]);
   };
 
-  const handleCustomFieldChange = (id: string, key: "label" | "value", text: string) => {
-    setCustomFields((prev) =>
-      prev.map((field) =>
-        field.id === id ? { ...field, [key]: text } : field
-      )
+  const handleCustomFieldChange = (
+    id: string,
+    key: 'label' | 'value',
+    text: string,
+  ) => {
+    setCustomFields(prev =>
+      prev.map(field => (field.id === id ? { ...field, [key]: text } : field)),
     );
   };
 
   const saveItem = async () => {
     if (!selectedFolder) {
-      Alert.alert("Please select a folder");
+      Alert.alert('Please select a folder');
       return;
     }
     if (!name) {
-      Alert.alert("Please enter item name");
+      Alert.alert('Please enter item name');
       return;
     }
 
-    const newItem : Item = {
+    const newItem: Item = {
       id: Date.now().toString(),
       folderId: selectedFolder.id,
       name,
@@ -77,11 +74,11 @@ const AddItemScreen = ({ navigation }: any) => {
       url,
       customFields,
     };
-     await addItem(newItem);
+    await addItem(newItem);
 
-    Alert.alert("Item saved!");
-    navigation.navigate("Dashboard", {
-      screen: "Home",
+    Alert.alert('Item saved!');
+    navigation.navigate('Dashboard', {
+      screen: 'Home',
       params: { refresh: Date.now() },
     });
   };
@@ -90,18 +87,20 @@ const AddItemScreen = ({ navigation }: any) => {
     <ScrollView contentContainerStyle={GlobalStyles.container}>
       <Text style={GlobalStyles.label}>Select Folder:</Text>
       <View style={styles.folderContainer}>
-        {folders.map((folder) => (
+        {folders.map(folder => (
           <TouchableOpacity
             key={folder.id}
             style={[
               styles.folderButton,
-              selectedFolder?.id === folder.id && { backgroundColor: "#007bff" },
+              selectedFolder?.id === folder.id && {
+                backgroundColor: '#007bff',
+              },
             ]}
             onPress={() => setSelectedFolder(folder)}
           >
             <Text
               style={{
-                color: selectedFolder?.id === folder.id ? "#fff" : "#000",
+                color: selectedFolder?.id === folder.id ? '#fff' : '#000',
               }}
             >
               {folder.name}
@@ -144,53 +143,59 @@ const AddItemScreen = ({ navigation }: any) => {
       />
 
       <Text style={GlobalStyles.label}>Custom Fields:</Text>
-      {customFields.map((field) => (
+      {customFields.map(field => (
         <View key={field.id} style={styles.customFieldContainer}>
           <TextInput
             style={[GlobalStyles.inputSm, { flex: 1, marginRight: 5 }]}
             placeholder="Field Label"
             value={field.label}
-            onChangeText={(text) => handleCustomFieldChange(field.id, "label", text)}
+            onChangeText={text =>
+              handleCustomFieldChange(field.id, 'label', text)
+            }
           />
           <TextInput
             style={[GlobalStyles.inputSm, { flex: 1, marginLeft: 5 }]}
             placeholder="Field Value"
             value={field.value}
-            onChangeText={(text) => handleCustomFieldChange(field.id, "value", text)}
+            onChangeText={text =>
+              handleCustomFieldChange(field.id, 'value', text)
+            }
           />
         </View>
       ))}
 
-      <TouchableOpacity style={GlobalStyles.btnSuccess} onPress={addCustomField}>
-        <Text style={{ color: "#fff" }}>Add Custom Field</Text>
+      <TouchableOpacity
+        style={GlobalStyles.btnSuccess}
+        onPress={addCustomField}
+      >
+        <Text style={{ color: '#fff' }}>Add Custom Field</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={GlobalStyles.btnPrimary} onPress={saveItem}>
-        <Text style={{ color: "#fff" }}>Save Item</Text>
+        <Text style={{ color: '#fff' }}>Save Item</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
- 
   folderContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     marginTop: 8,
   },
   folderButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
-    backgroundColor: "#eee",
+    backgroundColor: '#eee',
     marginRight: 8,
     marginBottom: 8,
   },
   customFieldContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginTop: 8,
-  }
+  },
 });
 
 export default AddItemScreen;
