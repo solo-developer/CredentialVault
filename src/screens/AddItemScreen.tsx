@@ -16,6 +16,7 @@ import Folder from '../types/Folder';
 import CustomField from '../types/CustomField';
 import { FOLDER_STORAGE_KEY } from '../Constants';
 import { getFolders } from '../services/FolderService';
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 const AddItemScreen = ({ navigation }: any) => {
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -85,6 +86,16 @@ const AddItemScreen = ({ navigation }: any) => {
 
   return (
     <ScrollView contentContainerStyle={GlobalStyles.container}>
+         
+           <View style={GlobalStyles.navHeaderSm}>
+           <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-back" size={26} color="#333" />
+           </TouchableOpacity>
+      
+            <Text style={GlobalStyles.title}>New Item</Text>
+            <View style={{ width: 26 }} /> 
+          </View>
+        
       <Text style={GlobalStyles.label}>Select Folder:</Text>
       <View style={styles.folderContainer}>
         {folders.map(folder => (

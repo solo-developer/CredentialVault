@@ -16,6 +16,7 @@ import Folder from '../types/Folder';
 import CustomField from '../types/CustomField';
 import { FOLDER_STORAGE_KEY } from '../Constants';
 import { getFolders } from '../services/FolderService';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 interface EditItemScreenProps {
   navigation: any;
@@ -107,6 +108,14 @@ const EditItemScreen: React.FC<EditItemScreenProps> = ({
 
   return (
     <ScrollView contentContainerStyle={GlobalStyles.container}>
+      <View style={GlobalStyles.navHeaderSm}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={26} color="#333" />
+        </TouchableOpacity>
+
+        <Text style={GlobalStyles.title}>Edit Item</Text>
+        <View style={{ width: 26 }} />
+      </View>
       <Text style={GlobalStyles.label}>Select Folder:</Text>
       <View style={styles.folderContainer}>
         {folders.map(folder => (

@@ -17,6 +17,12 @@ export const GlobalStyles = StyleSheet.create({
     marginBottom: 16,
     justifyContent: "space-between",
    },
+   navHeaderSm: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 2,
+    justifyContent: "space-between",
+   },
    navTitle: {
     fontSize: 20, 
     fontWeight: "bold", 
