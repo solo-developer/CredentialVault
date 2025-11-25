@@ -11,6 +11,7 @@ import AddItemScreen from './src/screens/AddItemScreen';
 import FolderItemsScreen from './src/screens/FolderItemsScreen';
 import ViewItemScreen from './src/screens/ViewItemScreen';
 import EditItemScreen from './src/screens/EditItemScreen';
+import ChangeLoginInformationScreen from './src/screens/ChangeLoginInformationScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +47,8 @@ export default function App() {
         <Stack.Screen name="FolderItems" component={FolderItemsScreen} />
         <Stack.Screen name="ViewItem" component={ViewItemScreen} />
         <Stack.Screen name="EditItem" component={EditItemScreen} />
+        <Stack.Screen name="ChangeLoginScreen"  component={ChangeLoginInformationScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
