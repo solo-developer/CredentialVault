@@ -8,10 +8,12 @@ import SettingsScreen from "./SettingsScreen";
 import { addFolder } from "../services/FolderService";
 import { Alert } from "react-native";
 import { GlobalStyles } from "../styles/global";
+import useSecureScreen from "../hooks/useSecureScreen";
 
 const Tab = createBottomTabNavigator();
 
 export default function Dashboard({ navigation }:any) {
+  useSecureScreen();
   const [showMenu, setShowMenu] = useState(false);
   const [folderModalVisible, setFolderModalVisible] = useState(false);
   const [folderName, setFolderName] = useState("");
