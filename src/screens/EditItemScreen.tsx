@@ -17,6 +17,7 @@ import CustomField from '../types/CustomField';
 import { FOLDER_STORAGE_KEY } from '../Constants';
 import { getFolders } from '../services/FolderService';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // <- eye icon
 
 interface EditItemScreenProps {
   navigation: any;
@@ -39,6 +40,7 @@ const EditItemScreen: React.FC<EditItemScreenProps> = ({
   const [name, setName] = useState(existingItem.name);
   const [username, setUsername] = useState(existingItem.username);
   const [password, setPassword] = useState(existingItem.password);
+  const [showPassword, setShowPassword] = useState(false); // <- new state
   const [url, setUrl] = useState(existingItem.url);
   const [customFields, setCustomFields] = useState<CustomField[]>(
     existingItem.customFields || [],
@@ -47,7 +49,6 @@ const EditItemScreen: React.FC<EditItemScreenProps> = ({
   useEffect(() => {
     const loadFolders = async () => {
       const storedFolders = await getFolders();
-
       setFolders(storedFolders);
 
       const initialFolder = storedFolders.find(
@@ -116,6 +117,7 @@ const EditItemScreen: React.FC<EditItemScreenProps> = ({
         <Text style={GlobalStyles.title}>Edit Item</Text>
         <View style={{ width: 26 }} />
       </View>
+
       <Text style={GlobalStyles.label}>Select Folder:</Text>
       <View style={styles.folderContainer}>
         {folders.map(folder => (
@@ -157,13 +159,21 @@ const EditItemScreen: React.FC<EditItemScreenProps> = ({
       />
 
       <Text style={GlobalStyles.label}>Password:</Text>
-      <TextInput
-        style={GlobalStyles.inputSm}
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Password"
-        secureTextEntry
-      />
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={[GlobalStyles.inputSm, { paddingRight: 40 }]}
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Password"
+          secureTextEntry={!showPassword}
+        />
+        <TouchableOpacity
+          style={GlobalStyles.eyeIcon}
+          onPress={() => setShowPassword(prev => !prev)}
+        >
+          <Icon name={showPassword ? 'eye-off' : 'eye'} size={22} color="gray" />
+        </TouchableOpacity>
+      </View>
 
       <Text style={GlobalStyles.label}>URL:</Text>
       <TextInput
@@ -227,6 +237,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 8,
   },
+  inputWrapper: {
+    position: 'relative',
+  }
 });
 
 export default EditItemScreen;

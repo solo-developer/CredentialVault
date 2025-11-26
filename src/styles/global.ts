@@ -111,4 +111,9 @@ export const GlobalStyles = StyleSheet.create({
     color: "#675b5bff",
     textAlign: "center",
   },
+   eyeIcon: {
+    position: 'absolute',
+    right: 10,
+    top: '35%',
+  },
 });

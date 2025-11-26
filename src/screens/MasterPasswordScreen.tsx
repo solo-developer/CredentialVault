@@ -105,7 +105,7 @@ const MasterPasswordSetup: React.FC = () => {
             onChangeText={setPassword}
           />
           <TouchableOpacity
-            style={styles.eyeIcon}
+            style={GlobalStyles.eyeIcon}
             onPress={() => setShowPassword(prev => !prev)}
           >
             <Icon name={showPassword ? 'eye-off' : 'eye'} size={22} color="gray" />
@@ -123,7 +123,7 @@ const MasterPasswordSetup: React.FC = () => {
               onChangeText={setConfirmPassword}
             />
             <TouchableOpacity
-              style={styles.eyeIcon}
+              style={GlobalStyles.eyeIcon}
               onPress={() => setShowConfirmPassword(prev => !prev)}
             >
               <Icon
@@ -210,9 +210,5 @@ const styles = StyleSheet.create({
   inputWrapper: {
     position: 'relative',
   },
-  eyeIcon: {
-    position: 'absolute',
-    right: 10,
-    top: '35%',
-  },
+ 
 });
