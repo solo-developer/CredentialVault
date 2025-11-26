@@ -1,15 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 
-import {
-  loginOneDrive,
-  uploadBackup,
-  downloadBackupFile,
-} from '../services/OnedriveService';
-import { loadBackupFromFile } from '../services/BackupMergeService';
-import { pick, types } from '@react-native-documents/picker';
-import { createBackupJSON } from '../services/LocalBackupService';
-import { GlobalStyles } from '../styles/global';
 import { CommonActions } from '@react-navigation/native';
 
 export default function SettingsScreen({ navigation }: any) {

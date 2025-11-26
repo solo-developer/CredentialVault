@@ -104,7 +104,6 @@ export const GlobalStyles = StyleSheet.create({
 
     justifyContent: "center",
     alignItems: "center",
-    flex : 1
   },
   emptyText: {
     fontSize: 16,
