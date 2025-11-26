@@ -9,12 +9,14 @@ import { addFolder } from "../services/FolderService";
 import { Alert } from "react-native";
 import { GlobalStyles } from "../styles/global";
 import useSecureScreen from "../hooks/useSecureScreen";
+import SyncScreen from "./SyncScreen";
 
 const Tab = createBottomTabNavigator();
 
-export default function Dashboard({ navigation }:any) {
+export default function Dashboard({ navigation }: any) {
   useSecureScreen();
-  const [showMenu, setShowMenu] = useState(false);
+
+  const [menuVisible, setMenuVisible] = useState(false);
   const [folderModalVisible, setFolderModalVisible] = useState(false);
   const [folderName, setFolderName] = useState("");
 
@@ -25,7 +27,6 @@ export default function Dashboard({ navigation }:any) {
     }
 
     const result = await addFolder(folderName.trim());
-
     if (!result.success) {
       Alert.alert(result.message);
       return;
@@ -33,32 +34,23 @@ export default function Dashboard({ navigation }:any) {
 
     setFolderModalVisible(false);
     setFolderName("");
-
-    navigation.navigate("Dashboard", {
-      screen: "Home",
-      params: { refresh: Date.now() },
-    });
+    navigation.navigate("Dashboard", { screen: "Home", params: { refresh: Date.now() } });
   };
-  const onAddItem = () => {
+
+  const handleAddItem = () => {
     navigation.navigate("AddItem");
+    setMenuVisible(false);
   };
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <Tab.Navigator
-      
         screenOptions={{
           headerShown: false,
           tabBarShowLabel: false,
           tabBarStyle: styles.tabBar,
-          tabBarItemStyle: {
-              width: "33.33%",
-              alignItems: "center",
-              justifyContent: "center",
-          }
         }}
       >
-        {/* HOME */}
         <Tab.Screen
           name="Home"
           component={HomeScreen}
@@ -72,26 +64,19 @@ export default function Dashboard({ navigation }:any) {
           }}
         />
 
-        {/* ADD BUTTON */}
         <Tab.Screen
-          name="Add"
-          component={Empty}
-          listeners={{
-            tabPress: e => e.preventDefault(),
-          }}
+          name="Sync"
+          component={SyncScreen}
           options={{
-            tabBarIcon: () => (
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => setShowMenu(!showMenu)}
-              >
-                <Ionicons name="add" size={32} color="white" />
-              </TouchableOpacity>
+            tabBarIcon: ({ focused }) => (
+              <View style={styles.iconContainer}>
+                <Ionicons name="sync" size={26} color={focused ? "#007bff" : "#444"} />
+                <Text style={[styles.iconText, focused && { color: "#007bff" }]}>Sync</Text>
+              </View>
             ),
           }}
         />
 
-        {/* SETTINGS */}
         <Tab.Screen
           name="Settings"
           component={SettingsScreen}
@@ -106,23 +91,25 @@ export default function Dashboard({ navigation }:any) {
         />
       </Tab.Navigator>
 
+      {/* Floating Plus Button */}
+      <TouchableOpacity
+        style={styles.floatingButton}
+        onPress={() => setMenuVisible(!menuVisible)}
+      >
+        <Ionicons name="add" size={32} color="white" />
+      </TouchableOpacity>
+
       {/* Floating Menu */}
-      {showMenu && (
-        <View style={styles.popupMenu}>
-          <TouchableOpacity
-            style={styles.popupBtn}
-            onPress={() => {
-              setShowMenu(false);
-              setFolderModalVisible(true);
-            }}
-          >
+      {menuVisible && (
+        <View style={styles.floatingMenu}>
+          <TouchableOpacity style={styles.menuBtn} onPress={() => { setFolderModalVisible(true); setMenuVisible(false); }}>
             <Ionicons name="folder" size={22} color="white" />
-            <Text style={styles.popupText}>Add Folder</Text>
+            <Text style={styles.menuText}>Add Folder</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.popupBtn} onPress={onAddItem}>
+          <TouchableOpacity style={styles.menuBtn} onPress={handleAddItem}>
             <Ionicons name="key" size={22} color="white" />
-            <Text style={styles.popupText}>Add Item</Text>
+            <Text style={styles.menuText}>Add Item</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -138,75 +125,61 @@ export default function Dashboard({ navigation }:any) {
               onChangeText={setFolderName}
               style={GlobalStyles.inputSm}
             />
-
             <TouchableOpacity style={GlobalStyles.btnPrimary} onPress={handleAddFolder}>
               <Text style={styles.saveText}>Save</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={() => setFolderModalVisible(false)}
-            >
+            <TouchableOpacity style={styles.cancelBtn} onPress={() => setFolderModalVisible(false)}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    </>
+    </View>
   );
-}
-
-function Empty() {
-  return <View />;
 }
 
 const styles = StyleSheet.create({
   tabBar: {
-    height: 70,
-    paddingBottom: 10,
-    paddingTop: 10,
+    height: 60,
+    paddingBottom: 5,
+    paddingTop: 5,
   },
-  tabButton: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: 70,          // prevents horizontal overflow
-  },
-  iconContainer: { alignItems: "center", minWidth: "100%" },
-  iconText: { 
-    fontSize: 11,
-    marginTop: 2,
-    textAlign: "center",
-    includeFontPadding: false,
-    numberOfLines: 1,
-    lineHeight: 12,
-    height: 14
-  },
+  iconContainer: { alignItems: "center", width:300 },
+  iconText: { fontSize: 11, marginTop: 2, color: "#444" },
 
-  addButton: {
-    width: 62,
-    height: 62,
-    backgroundColor: "#007bff",
-    borderRadius: 35,
-    justifyContent: "center",
-    alignItems: "center",
-    top: -10,
-  },
-
-  popupMenu: {
+  floatingButton: {
     position: "absolute",
-    bottom: 100,
-    alignSelf: "center",
-    backgroundColor: "#333",
-    padding: 15,
-    borderRadius: 12,
+    bottom: 75,
+    right: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#007bff",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 4,
   },
-  popupBtn: {
+
+  floatingMenu: {
+    position: "absolute",
+    bottom: 130,
+    right: 60,
+    backgroundColor: "#333",
+    padding: 10,
+    borderRadius: 10,
+    elevation: 5,
+  },
+  menuBtn: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 10,
+    paddingVertical: 8,
   },
-  popupText: { color: "white", marginLeft: 8 },
-  
+  menuText: { color: "white", marginLeft: 8 },
+
   saveText: { color: "white", textAlign: "center", fontWeight: "bold" },
   cancelBtn: { padding: 10 },
   cancelText: { textAlign: "center", color: "#555" },
