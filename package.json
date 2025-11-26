@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/netinfo": "^11.4.1",
     "@react-native-documents/picker": "^11.0.0",
     "@react-native/new-app-screen": "0.82.1",
     "@react-navigation/bottom-tabs": "^7.8.6",
@@ -19,6 +20,8 @@
     "react": "19.1.1",
     "react-native": "0.82.1",
     "react-native-app-auth": "^8.1.0",
+    "react-native-background-actions": "^4.0.1",
+    "react-native-background-fetch": "^4.2.8",
     "react-native-bcrypt": "^2.4.0",
     "react-native-fs": "^2.20.0",
     "react-native-safe-area-context": "^5.6.2",

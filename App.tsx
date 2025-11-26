@@ -12,13 +12,16 @@ import FolderItemsScreen from './src/screens/FolderItemsScreen';
 import ViewItemScreen from './src/screens/ViewItemScreen';
 import EditItemScreen from './src/screens/EditItemScreen';
 import ChangeLoginInformationScreen from './src/screens/ChangeLoginInformationScreen';
+import { initBackgroundSync } from './src/services/BackgroundSync';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [hasMasterPassword, setHasMasterPassword] = useState(false);
-
+  useEffect(() => {
+    initBackgroundSync(); 
+  }, []);
   useEffect(() => {
     const checkMasterPassword = async () => {
       const password = await AsyncStorage.getItem('masterPassword');
@@ -40,15 +43,20 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!hasMasterPassword ? (
-          <Stack.Screen name="MasterPasswordSetup" component={MasterPasswordSetup} />
+          <Stack.Screen
+            name="MasterPasswordSetup"
+            component={MasterPasswordSetup}
+          />
         ) : null}
         <Stack.Screen name="Dashboard" component={Dashboard} />
         <Stack.Screen name="AddItem" component={AddItemScreen} />
         <Stack.Screen name="FolderItems" component={FolderItemsScreen} />
         <Stack.Screen name="ViewItem" component={ViewItemScreen} />
         <Stack.Screen name="EditItem" component={EditItemScreen} />
-        <Stack.Screen name="ChangeLoginScreen"  component={ChangeLoginInformationScreen} />
-
+        <Stack.Screen
+          name="ChangeLoginScreen"
+          component={ChangeLoginInformationScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
