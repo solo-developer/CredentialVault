@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 
 import {
   loginOneDrive,
@@ -9,10 +9,11 @@ import {
 import { loadBackupFromFile } from '../services/BackupMergeService';
 import { pick, types } from '@react-native-documents/picker';
 import { createBackupJSON } from '../services/LocalBackupService';
+import { GlobalStyles } from '../styles/global';
 
 export default function SettingsScreen({ navigation }: any) {
   const [connected, setConnected] = useState(false);
-
+  const [syncing, setSyncing] = useState(false);
   const handleConnectOneDrive = async () => {
     try {
       await loginOneDrive();
@@ -69,11 +70,13 @@ export default function SettingsScreen({ navigation }: any) {
 
   const handleSyncToOneDrive = async () => {
     try {
+      setSyncing(true);
       const data = await createBackupJSON();
       await uploadBackup(data);
-
+      setSyncing(false);
       Alert.alert('Success', 'Backup uploaded to OneDrive.');
     } catch (e) {
+      setSyncing(false);
       Alert.alert('Error', String(e));
     }
   };
@@ -91,8 +94,19 @@ export default function SettingsScreen({ navigation }: any) {
           {connected ? 'Connected ✔' : 'Connect OneDrive'}
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleSyncToOneDrive}>
-        <Text style={styles.buttonText}>Sync Local Data to OneDrive</Text>
+      <TouchableOpacity style={styles.button} onPress={handleSyncToOneDrive} disabled={syncing}>
+       {syncing ?  (<View
+                     style={{
+                       flexDirection: 'row',
+                       justifyContent: 'center',
+                       alignItems: 'center',
+                     }}
+                   >
+                     <ActivityIndicator color="#fff" />
+                     <Text style={[GlobalStyles.buttonText, { marginLeft: 10 }]}>
+                       Syncing...
+                     </Text>
+                   </View> ) :  (<Text style={styles.buttonText}>Sync Local Data to OneDrive</Text>) }
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={handleDownloadBackup}>
@@ -103,7 +117,10 @@ export default function SettingsScreen({ navigation }: any) {
         <Text style={styles.buttonText}>Load Backup File</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={changeLoginInformationClicked}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={changeLoginInformationClicked}
+      >
         <Text style={styles.buttonText}>Change Login Information</Text>
       </TouchableOpacity>
     </View>
