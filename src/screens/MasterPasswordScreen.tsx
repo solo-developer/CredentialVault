@@ -12,6 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // add this
 import { useNavigation } from '@react-navigation/native';
 import { GlobalStyles } from '../styles/global';
 import { MASTER_PASSWORD_KEY, MASTER_USERNAME_KEY } from '../Constants';
@@ -24,6 +25,10 @@ const MasterPasswordSetup: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
+
+  // NEW STATES FOR EYE ICON
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const checkFirstLaunch = async () => {
@@ -72,17 +77,17 @@ const MasterPasswordSetup: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
-      {/* Logo */}
       <Image source={require('../assets/icon.png')} style={styles.logo} />
 
-      {/* Title */}
       <Text style={styles.title}>
         {isFirstLaunch ? 'Setup Master Password' : 'Welcome Back'}
       </Text>
       <Text style={styles.subtext}>
         Please enter the details below to continue
       </Text>
+
       <View style={styles.formContainer}>
+        {/* Username */}
         <TextInput
           placeholder="Username"
           style={GlobalStyles.inputMd}
@@ -90,28 +95,50 @@ const MasterPasswordSetup: React.FC = () => {
           onChangeText={setUsername}
         />
 
-        <TextInput
-          placeholder="Master Password"
-          style={GlobalStyles.inputMd}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-
-        {isFirstLaunch && (
+        {/* Password */}
+        <View style={styles.inputWrapper}>
           <TextInput
-            placeholder="Confirm Password"
-            style={GlobalStyles.inputMd}
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            placeholder="Master Password"
+            style={[GlobalStyles.inputMd, { paddingRight: 40 }]}
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
           />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(prev => !prev)}
+          >
+            <Icon name={showPassword ? 'eye-off' : 'eye'} size={22} color="gray" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Confirm Password */}
+        {isFirstLaunch && (
+          <View style={styles.inputWrapper}>
+            <TextInput
+              placeholder="Confirm Password"
+              style={[GlobalStyles.inputMd, { paddingRight: 40 }]}
+              secureTextEntry={!showConfirmPassword}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowConfirmPassword(prev => !prev)}
+            >
+              <Icon
+                name={showConfirmPassword ? 'eye-off' : 'eye'}
+                size={22}
+                color="gray"
+              />
+            </TouchableOpacity>
+          </View>
         )}
 
         <TouchableOpacity
           style={GlobalStyles.btnPrimary}
           onPress={isFirstLaunch ? handleSetup : handleLogin}
-          disabled={loading} // disable button while loading
+          disabled={loading}
         >
           {loading ? (
             <View
@@ -134,7 +161,6 @@ const MasterPasswordSetup: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Footer */}
       <Text style={styles.footerText}>
         Made with love by
         <Text style={{ fontWeight: 'bold' }}> solo-developer ❤️</Text>
@@ -166,6 +192,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#222222',
   },
+  subtext: {
+    fontSize: 12,
+    color: 'gray',
+    textAlign: 'center',
+  },
   formContainer: {
     width: '100%',
     gap: 15,
@@ -176,9 +207,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#777',
   },
-  subtext: {
-    fontSize: 12,
-    color: 'gray',
-    textAlign: 'center',
+  inputWrapper: {
+    position: 'relative',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 10,
+    top: '35%',
   },
 });
