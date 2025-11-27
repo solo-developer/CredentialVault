@@ -12,11 +12,12 @@ import {
   Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // add this
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { GlobalStyles } from '../styles/global';
 import { MASTER_PASSWORD_KEY, MASTER_USERNAME_KEY } from '../Constants';
 import { SaveUserInfo, verifyUser } from '../services/AuthenticationService';
+import ReactNativeBiometrics from 'react-native-biometrics';
 
 const MasterPasswordSetup: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -26,9 +27,10 @@ const MasterPasswordSetup: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
 
-  // NEW STATES FOR EYE ICON
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
 
   useEffect(() => {
     const checkFirstLaunch = async () => {
@@ -43,6 +45,19 @@ const MasterPasswordSetup: React.FC = () => {
     };
     checkFirstLaunch();
   }, []);
+
+  // Load biometric preference if login screen
+  useEffect(() => {
+    const loadBiometricPreference = async () => {
+      try {
+        const saved = await AsyncStorage.getItem('@use_biometric_login');
+        setBiometricEnabled(saved === 'true');
+      } catch (error) {
+        console.log('Failed to load biometric preference', error);
+      }
+    };
+    if (isFirstLaunch === false) loadBiometricPreference();
+  }, [isFirstLaunch]);
 
   const handleSetup = async () => {
     if (!username.trim() || !password || !confirmPassword) {
@@ -70,6 +85,23 @@ const MasterPasswordSetup: React.FC = () => {
     }
   };
 
+  const handleBiometricLogin = async () => {
+    const rnBiometrics = new ReactNativeBiometrics();
+    try {
+      const result = await rnBiometrics.simplePrompt({
+        promptMessage: 'Authenticate',
+      });
+      if (result.success) {
+        navigation.replace('Dashboard');
+      } else {
+        Alert.alert('Authentication failed');
+      }
+    } catch (error) {
+      console.log('Biometric error', error);
+      Alert.alert('Authentication failed', error?.message);
+    }
+  };
+
   if (isFirstLaunch === null) return null;
 
   return (
@@ -87,7 +119,6 @@ const MasterPasswordSetup: React.FC = () => {
       </Text>
 
       <View style={styles.formContainer}>
-        {/* Username */}
         <TextInput
           placeholder="Username"
           style={GlobalStyles.inputMd}
@@ -95,7 +126,6 @@ const MasterPasswordSetup: React.FC = () => {
           onChangeText={setUsername}
         />
 
-        {/* Password */}
         <View style={styles.inputWrapper}>
           <TextInput
             placeholder="Master Password"
@@ -108,11 +138,14 @@ const MasterPasswordSetup: React.FC = () => {
             style={GlobalStyles.eyeIcon}
             onPress={() => setShowPassword(prev => !prev)}
           >
-            <Icon name={showPassword ? 'eye-off' : 'eye'} size={22} color="gray" />
+            <Icon
+              name={showPassword ? 'eye-off' : 'eye'}
+              size={22}
+              color="gray"
+            />
           </TouchableOpacity>
         </View>
 
-        {/* Confirm Password */}
         {isFirstLaunch && (
           <View style={styles.inputWrapper}>
             <TextInput
@@ -159,6 +192,21 @@ const MasterPasswordSetup: React.FC = () => {
             </Text>
           )}
         </TouchableOpacity>
+
+        {/* Biometric Login Option */}
+        {!isFirstLaunch && biometricEnabled && (
+          <>
+            <Text style={styles.orText}>— OR —</Text>
+            <TouchableOpacity
+              style={styles.biometricButton}
+              onPress={handleBiometricLogin}
+            >
+              <Text style={styles.biometricButtonText}>
+                Login with Biometric
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
 
       <Text style={styles.footerText}>
@@ -192,23 +240,26 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#222222',
   },
-  subtext: {
-    fontSize: 12,
-    color: 'gray',
-    textAlign: 'center',
-  },
-  formContainer: {
-    width: '100%',
-    gap: 15,
-  },
+  subtext: { fontSize: 12, color: 'gray', textAlign: 'center' },
+  formContainer: { width: '100%', gap: 15 },
   footerText: {
     textAlign: 'center',
     marginTop: 60,
     fontSize: 12,
     color: '#777',
   },
-  inputWrapper: {
-    position: 'relative',
+  inputWrapper: { position: 'relative' },
+  orText: {
+    textAlign: 'center',
+    marginVertical: 10,
+    color: 'gray',
+    fontWeight: '500',
   },
- 
+  biometricButton: {
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  biometricButtonText: { fontSize: 16, color: '#222', fontWeight: '500' },
 });
