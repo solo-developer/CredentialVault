@@ -11,16 +11,18 @@ import { GlobalStyles } from "../styles/global";
 import useSecureScreen from "../hooks/useSecureScreen";
 import SyncScreen from "./SyncScreen";
 import NavHeader from "../components/NavHeader";
+import { useBackHandlerExitApp } from "../hooks/useBackHandlerExitApp";
 
 const Tab = createBottomTabNavigator();
 
 export default function Dashboard({ navigation }: any) {
   useSecureScreen();
+  useBackHandlerExitApp();
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [folderModalVisible, setFolderModalVisible] = useState(false);
   const [folderName, setFolderName] = useState("");
-
+  
   const handleAddFolder = async () => {
     if (!folderName.trim()) {
       Alert.alert("Folder name cannot be empty");

@@ -13,12 +13,15 @@ import ViewItemScreen from './src/screens/ViewItemScreen';
 import EditItemScreen from './src/screens/EditItemScreen';
 import ChangeLoginInformationScreen from './src/screens/ChangeLoginInformationScreen';
 import { initBackgroundSync } from './src/services/BackgroundSync';
+import { useAppLock } from './src/hooks/useAppLock';
+import { navigationRef } from './src/navigation/RootNavigation';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [hasMasterPassword, setHasMasterPassword] = useState(false);
+  useAppLock();
   useEffect(() => {
     initBackgroundSync(); 
   }, []);
@@ -40,7 +43,7 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!hasMasterPassword ? (
           <Stack.Screen

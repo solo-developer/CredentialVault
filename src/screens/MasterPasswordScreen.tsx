@@ -18,6 +18,7 @@ import { GlobalStyles } from '../styles/global';
 import { MASTER_PASSWORD_KEY, MASTER_USERNAME_KEY } from '../Constants';
 import { SaveUserInfo, verifyUser } from '../services/AuthenticationService';
 import ReactNativeBiometrics from 'react-native-biometrics';
+import { useBackHandlerExitApp } from '../hooks/useBackHandlerExitApp';
 
 const MasterPasswordSetup: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -31,7 +32,7 @@ const MasterPasswordSetup: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [biometricEnabled, setBiometricEnabled] = useState(false);
-
+  useBackHandlerExitApp();
   useEffect(() => {
     const checkFirstLaunch = async () => {
       const storedPassword = await AsyncStorage.getItem(MASTER_PASSWORD_KEY);
@@ -96,7 +97,7 @@ const MasterPasswordSetup: React.FC = () => {
       } else {
         Alert.alert('Authentication failed');
       }
-    } catch (error : any) {
+    } catch (error: any) {
       console.log('Biometric error', error);
       Alert.alert('Authentication failed', error.message);
     }
