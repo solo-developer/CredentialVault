@@ -10,6 +10,7 @@ import { Alert } from "react-native";
 import { GlobalStyles } from "../styles/global";
 import useSecureScreen from "../hooks/useSecureScreen";
 import SyncScreen from "./SyncScreen";
+import NavHeader from "../components/NavHeader";
 
 const Tab = createBottomTabNavigator();
 
@@ -44,6 +45,7 @@ export default function Dashboard({ navigation }: any) {
 
   return (
     <View style={{ flex: 1 }}>
+      <NavHeader  navigation={navigation}></NavHeader>
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
@@ -93,7 +95,7 @@ export default function Dashboard({ navigation }: any) {
 
       {/* Floating Plus Button */}
       <TouchableOpacity
-        style={styles.floatingButton}
+        style={GlobalStyles.floatingButton}
         onPress={() => setMenuVisible(!menuVisible)}
       >
         <Ionicons name="add" size={32} color="white" />
@@ -101,15 +103,15 @@ export default function Dashboard({ navigation }: any) {
 
       {/* Floating Menu */}
       {menuVisible && (
-        <View style={styles.floatingMenu}>
-          <TouchableOpacity style={styles.menuBtn} onPress={() => { setFolderModalVisible(true); setMenuVisible(false); }}>
+        <View style={GlobalStyles.floatingMenu}>
+          <TouchableOpacity style={GlobalStyles.menuBtn} onPress={() => { setFolderModalVisible(true); setMenuVisible(false); }}>
             <Ionicons name="folder" size={22} color="white" />
-            <Text style={styles.menuText}>Add Folder</Text>
+            <Text style={GlobalStyles.menuText}>Add Folder</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuBtn} onPress={handleAddItem}>
+          <TouchableOpacity style={GlobalStyles.menuBtn} onPress={handleAddItem}>
             <Ionicons name="key" size={22} color="white" />
-            <Text style={styles.menuText}>Add Item</Text>
+            <Text style={GlobalStyles.menuText}>Add Item</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -147,38 +149,7 @@ const styles = StyleSheet.create({
   iconContainer: { alignItems: "center", width:300 },
   iconText: { fontSize: 11, marginTop: 2, color: "#444" },
 
-  floatingButton: {
-    position: "absolute",
-    bottom: 75,
-    right: 25,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#007bff",
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 4,
-  },
-
-  floatingMenu: {
-    position: "absolute",
-    bottom: 130,
-    right: 60,
-    backgroundColor: "#333",
-    padding: 10,
-    borderRadius: 10,
-    elevation: 5,
-  },
-  menuBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  menuText: { color: "white", marginLeft: 8 },
+  
 
   saveText: { color: "white", textAlign: "center", fontWeight: "bold" },
   cancelBtn: { padding: 10 },

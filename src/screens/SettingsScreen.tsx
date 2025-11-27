@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
-import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ReactNativeBiometrics from 'react-native-biometrics';
 
@@ -34,14 +33,6 @@ export default function SettingsScreen({ navigation }: any) {
     navigation.navigate('ChangeLoginScreen');
   };
 
-  const logoutButtonClicked = () => {
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'MasterPasswordSetup' }],
-      }),
-    );
-  };
 
   const toggleBiometricLogin = async () => {
     const newValue = !useBiometricLogin;
@@ -77,9 +68,6 @@ export default function SettingsScreen({ navigation }: any) {
         </View>
       )}
 
-      <TouchableOpacity style={styles.button} onPress={logoutButtonClicked}>
-        <Text style={styles.buttonText}>Logout</Text>
-      </TouchableOpacity>
     </View>
   );
 }

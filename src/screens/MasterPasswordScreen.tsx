@@ -96,9 +96,9 @@ const MasterPasswordSetup: React.FC = () => {
       } else {
         Alert.alert('Authentication failed');
       }
-    } catch (error) {
+    } catch (error : any) {
       console.log('Biometric error', error);
-      Alert.alert('Authentication failed', error?.message);
+      Alert.alert('Authentication failed', error.message);
     }
   };
 
