@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  PermissionsAndroid,
+  Platform,
+} from 'react-native';
+import MediaStore from "react-native-media-store";
 import {
   loginOneDrive,
   uploadBackup,
@@ -10,6 +19,7 @@ import { loadBackupFromFile } from '../services/BackupMergeService';
 import { pick, types } from '@react-native-documents/picker';
 import { createBackupJSON } from '../services/LocalBackupService';
 import { GlobalStyles } from '../styles/global';
+import { requestStoragePermission } from '../services/PermissionService';
 
 export default function SyncScreen({ navigation }: any) {
   const [connected, setConnected] = useState(false);
@@ -26,6 +36,16 @@ export default function SyncScreen({ navigation }: any) {
 
   const handleDownloadBackup = async () => {
     try {
+      const hasPermission = await requestStoragePermission();
+
+      if (!hasPermission) {
+        Alert.alert(
+          'Permission Required',
+          'Please allow storage access to save the downloaded backup.',
+        );
+        return;
+      }
+
       const path = await downloadBackupFile();
       Alert.alert('Downloaded', `Saved to: ${path}`);
     } catch (e: any) {
@@ -81,7 +101,6 @@ export default function SyncScreen({ navigation }: any) {
     }
   };
 
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sync to Onedrive</Text>
@@ -91,19 +110,27 @@ export default function SyncScreen({ navigation }: any) {
           {connected ? 'Connected ✔' : 'Connect OneDrive'}
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleSyncToOneDrive} disabled={syncing}>
-       {syncing ?  (<View
-                     style={{
-                       flexDirection: 'row',
-                       justifyContent: 'center',
-                       alignItems: 'center',
-                     }}
-                   >
-                     <ActivityIndicator color="#fff" />
-                     <Text style={[GlobalStyles.buttonText, { marginLeft: 10 }]}>
-                       Syncing...
-                     </Text>
-                   </View> ) :  (<Text style={styles.buttonText}>Sync Local Data to OneDrive</Text>) }
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleSyncToOneDrive}
+        disabled={syncing}
+      >
+        {syncing ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <ActivityIndicator color="#fff" />
+            <Text style={[GlobalStyles.buttonText, { marginLeft: 10 }]}>
+              Syncing...
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.buttonText}>Sync Local Data to OneDrive</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={handleDownloadBackup}>
@@ -113,7 +140,6 @@ export default function SyncScreen({ navigation }: any) {
       <TouchableOpacity style={styles.button} onPress={handleLoadFile}>
         <Text style={styles.buttonText}>Load Backup File</Text>
       </TouchableOpacity>
-     
     </View>
   );
 }

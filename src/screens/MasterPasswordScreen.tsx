@@ -150,12 +150,12 @@ const MasterPasswordSetup: React.FC = () => {
             >
               <ActivityIndicator color="#fff" />
               <Text style={[GlobalStyles.buttonText, { marginLeft: 10 }]}>
-                {isFirstLaunch ? 'Creating...' : 'Logging in...'}
+                {isFirstLaunch ? 'Signing up...' : 'Logging in...'}
               </Text>
             </View>
           ) : (
             <Text style={GlobalStyles.buttonText}>
-              {isFirstLaunch ? 'Create Password' : 'Login'}
+              {isFirstLaunch ? 'Sign Up' : 'Login'}
             </Text>
           )}
         </TouchableOpacity>

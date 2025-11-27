@@ -1,21 +1,20 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { CommonActions } from '@react-navigation/native';
 
 export default function SettingsScreen({ navigation }: any) {
-  
   const changeLoginInformationClicked = async () => {
     navigation.navigate('ChangeLoginScreen');
   };
 
   const logoutButtonClicked = async () => {
-     navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'MasterPasswordSetup' }],
-                  }),
-                );
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'MasterPasswordSetup' }],
+      }),
+    );
   };
 
   return (
@@ -29,10 +28,7 @@ export default function SettingsScreen({ navigation }: any) {
         <Text style={styles.buttonText}>Change Login Information</Text>
       </TouchableOpacity>
 
-       <TouchableOpacity
-        style={styles.button}
-        onPress={logoutButtonClicked}
-      >
+      <TouchableOpacity style={styles.button} onPress={logoutButtonClicked}>
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
     </View>
