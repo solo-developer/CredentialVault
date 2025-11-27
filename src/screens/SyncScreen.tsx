@@ -9,7 +9,7 @@ import {
   PermissionsAndroid,
   Platform,
 } from 'react-native';
-import MediaStore from "react-native-media-store";
+
 import {
   loginOneDrive,
   uploadBackup,
