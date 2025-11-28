@@ -23,6 +23,7 @@ import { pick, types } from '@react-native-documents/picker';
 import { loadBackupFromFile } from '../services/BackupMergeService';
 import { createBackupJSON } from '../services/LocalBackupService';
 import { requestStoragePermission } from '../services/PermissionService';
+import { GlobalStyles } from '../styles/global';
 
 export default function SyncScreen({ navigation }: any) {
   const [connected, setConnected] = useState(false);
@@ -136,7 +137,7 @@ export default function SyncScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>OneDrive Sync</Text>
+      <Text style={GlobalStyles.subtitle}>OneDrive Sync</Text>
 
       {/* CONNECTION CARD */}
       <View style={styles.card}>

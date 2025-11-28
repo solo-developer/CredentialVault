@@ -147,4 +147,6 @@ export const GlobalStyles = StyleSheet.create({
     paddingVertical: 8,
   },
   menuText: { color: "white", marginLeft: 8 },
+  subtitle: { fontSize: 18, fontWeight: '600', marginBottom: 12, color: '#636e72' },
+
 });

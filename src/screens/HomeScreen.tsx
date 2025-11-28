@@ -118,7 +118,7 @@ const HomeScreen = ({ navigation }: any) => {
 
   return (
     <View style={GlobalStyles.container}>
-      <Text style={styles.header}>Folders</Text>
+      <Text style={GlobalStyles.subtitle}>Folders</Text>
      {folders.length === 0 ? (
       <View style={GlobalStyles.emptyContainer}>
         <Text style={GlobalStyles.emptyText}>
