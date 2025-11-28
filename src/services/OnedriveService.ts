@@ -4,23 +4,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { oneDriveConfig } from './AuthConfig';
 import { BackupData } from './LocalBackupService';
 import RNFetchBlob from 'react-native-blob-util';
-import {  Platform } from 'react-native';
+import { Platform } from 'react-native';
 import { disableAppLock, enableAppLock } from '../utils/AppLockState';
 
 const BACKUP_FILENAME = 'credentialvault-backup.json';
+
 const TOKEN_KEY = 'onedrive_token';
 const REFRESH_KEY = 'onedrive_refresh';
 
-// -------------------- Authentication --------------------
-export const loginOneDrive = async () => {
-  disableAppLock(); 
-  const authState = await authorize(oneDriveConfig);
-  await AsyncStorage.setItem('onedrive_auth', JSON.stringify(authState));
-  await AsyncStorage.setItem(TOKEN_KEY, authState.accessToken);
-  await AsyncStorage.setItem(REFRESH_KEY, authState.refreshToken ?? '');
-  enableAppLock();
-  return authState;
-};
+// ---------------------- TOKEN STORAGE HELPERS ------------------------
 
 export const getSavedTokens = async () => {
   const data = await AsyncStorage.getItem('onedrive_auth');
@@ -28,34 +20,92 @@ export const getSavedTokens = async () => {
 };
 
 export const saveTokens = async (tokens: any) => {
+  // Save entire object
   await AsyncStorage.setItem('onedrive_auth', JSON.stringify(tokens));
+
+  // Store individually for fast access
+  if (tokens.accessToken) {
+    await AsyncStorage.setItem(TOKEN_KEY, tokens.accessToken);
+  }
+  if (tokens.refreshToken) {
+    await AsyncStorage.setItem(REFRESH_KEY, tokens.refreshToken);
+  }
 };
 
+// ---------------------- LOGIN / AUTH ------------------------
+
+export const loginOneDrive = async () => {
+  disableAppLock();
+
+  // If already authenticated → don't open Microsoft login again
+  const existing = await getValidToken();
+  if (existing) {
+    enableAppLock();
+    return { accessToken: existing };
+  }
+
+  const authState = await authorize(oneDriveConfig);
+
+  const newState = {
+    accessToken: authState.accessToken,
+    refreshToken: authState.refreshToken,
+    accessTokenExpirationDate: authState.accessTokenExpirationDate,
+    tokenType: authState.tokenType,
+  };
+
+  await saveTokens(newState);
+  enableAppLock();
+  return newState;
+};
+
+// ---------------------- TOKEN VALIDATION ------------------------
+
 export async function getValidToken() {
+  const saved = await getSavedTokens();
+  if (!saved) return null;
+
+  const now = Date.now();
+  const expires = new Date(saved.accessTokenExpirationDate).getTime();
+
+  // 5 second safety margin
+  if (expires - 5000 > now) {
+    return saved.accessToken;
+  }
+
+  // Refresh token flow
   const refreshToken = await AsyncStorage.getItem(REFRESH_KEY);
   if (!refreshToken) return null;
 
   try {
     const refreshed = await refresh(oneDriveConfig, { refreshToken });
-    await AsyncStorage.setItem(TOKEN_KEY, refreshed.accessToken);
-    await AsyncStorage.setItem(
-      REFRESH_KEY,
-      refreshed.refreshToken ?? refreshToken,
-    );
-    return refreshed.accessToken;
-  } catch {
+
+    // Build clean updated state
+    const newState = {
+      ...saved,
+      accessToken: refreshed.accessToken,
+      refreshToken: refreshed.refreshToken || saved.refreshToken,
+      accessTokenExpirationDate: refreshed.accessTokenExpirationDate,
+    };
+
+    await saveTokens(newState);
+
+    return newState.accessToken;
+  } catch (err) {
+    console.log('Failed to refresh OneDrive token:', err);
     return null;
   }
 }
 
-// -------------------- Upload Backup --------------------
+// ---------------------- UPLOAD BACKUP ------------------------
+
 export async function uploadBackup(data: BackupData) {
   const token = await getValidToken();
   if (!token) throw new Error('Not authenticated');
 
   const jsonStr = JSON.stringify(data, null, 2);
 
-  const uploadUrl = `https://graph.microsoft.com/v1.0/me/drive/special/approot:/${BACKUP_FILENAME}:/content`;
+  const uploadUrl =
+    `https://graph.microsoft.com/v1.0/me/drive/special/approot:/${BACKUP_FILENAME}:/content`;
 
   const res = await fetch(uploadUrl, {
     method: 'PUT',
@@ -68,14 +118,13 @@ export async function uploadBackup(data: BackupData) {
 
   if (!res.ok) throw new Error('Upload failed');
 
-  // Delete old versions to prevent OneDrive storage growth
   await cleanupOldVersions(token);
 }
 
-// -------------------- Delete old versions --------------------
+// ---------------------- CLEAN OLD VERSIONS ------------------------
+
 async function cleanupOldVersions(token: string) {
   try {
-    // 1. Get the file metadata to obtain the item-id
     const fileMetaRes = await fetch(
       `https://graph.microsoft.com/v1.0/me/drive/special/approot:/${BACKUP_FILENAME}`,
       { headers: { Authorization: `Bearer ${token}` } },
@@ -89,7 +138,6 @@ async function cleanupOldVersions(token: string) {
     const fileMeta = await fileMetaRes.json();
     const itemId = fileMeta.id;
 
-    // 2. List all versions of the file
     const versionsRes = await fetch(
       `https://graph.microsoft.com/v1.0/me/drive/items/${itemId}/versions`,
       { headers: { Authorization: `Bearer ${token}` } },
@@ -103,9 +151,10 @@ async function cleanupOldVersions(token: string) {
     const versionsData = await versionsRes.json();
     const versions = versionsData.value;
 
-    // 3. Delete all old versions, keep only the latest
+    // Keep newest version only
     for (let i = 0; i < versions.length - 1; i++) {
       const versionId = versions[i].id;
+
       const deleteRes = await fetch(
         `https://graph.microsoft.com/v1.0/me/drive/items/${itemId}/versions/${versionId}`,
         {
@@ -116,35 +165,33 @@ async function cleanupOldVersions(token: string) {
 
       if (!deleteRes.ok) {
         console.warn(`Failed to delete version ${versionId}`);
-        console.log('delete Res', await deleteRes.json());
       }
     }
 
     console.log('Old versions cleaned up successfully');
   } catch (err) {
-    console.warn('Error cleaning up old OneDrive versions:', err);
+    console.warn('Error cleaning OneDrive versions:', err);
   }
 }
 
-// -------------------- Download Backup --------------------
+// ---------------------- DOWNLOAD BACKUP ------------------------
+
 export const downloadBackupFile = async () => {
   try {
-    // 1. Get fresh OneDrive token
     const token = await getValidToken();
-    if (!token) throw "Not authenticated";
+    if (!token) throw 'Not authenticated';
 
-    // 2. Fetch backup JSON from OneDrive
-    const downloadUrl = `https://graph.microsoft.com/v1.0/me/drive/special/approot:/${BACKUP_FILENAME}:/content`;
+    const downloadUrl =
+      `https://graph.microsoft.com/v1.0/me/drive/special/approot:/${BACKUP_FILENAME}:/content`;
+
     const response = await fetch(downloadUrl, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    if (!response.ok) throw "File not found in OneDrive";
+    if (!response.ok) throw 'File not found in OneDrive';
 
-    // 3. Read content as string (JSON file)
     const content = await response.text();
 
-     // 3️⃣ Build file path
     let path = '';
     if (Platform.OS === 'android') {
       path = RNFetchBlob.fs.dirs.DownloadDir + '/' + BACKUP_FILENAME;
@@ -152,14 +199,11 @@ export const downloadBackupFile = async () => {
       path = RNFetchBlob.fs.dirs.DocumentDir + '/' + BACKUP_FILENAME;
     }
 
-    // 4️⃣ Write file
     await RNFetchBlob.fs.writeFile(path, content, 'utf8');
 
     return path;
-
-  } catch (err: any) {
-    
-    console.warn("Download Error:", err);
+  } catch (err) {
+    console.warn('Download Error:', err);
     throw err;
   }
 };
