@@ -207,3 +207,79 @@ export const downloadBackupFile = async () => {
     throw err;
   }
 };
+
+export const getOneDriveUserInfo = async () => {
+  const token = await getValidToken();
+  if (!token) return null;
+
+  try {
+    const res = await fetch("https://graph.microsoft.com/v1.0/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch account info");
+
+    const profile = await res.json();
+
+    // Store email locally for quick UI access
+    if (profile?.userPrincipalName) {
+      await AsyncStorage.setItem("onedrive_email", profile.userPrincipalName);
+    }
+
+    return profile;
+  } catch (err) {
+    console.warn("User info fetch error:", err);
+    return null;
+  }
+};
+
+
+// ---------------------- REMOVE ACCOUNT ------------------------
+
+/**
+ * Completely removes OneDrive authentication data.
+ * Used when user wants to switch account.
+ */
+export const disconnectOneDrive = async () => {
+  try {
+    await AsyncStorage.removeItem("onedrive_auth");
+    await AsyncStorage.removeItem("onedrive_email");
+    await AsyncStorage.removeItem(TOKEN_KEY);
+    await AsyncStorage.removeItem(REFRESH_KEY);
+
+    console.log("OneDrive account disconnected");
+    return true;
+  } catch (err) {
+    console.warn("Failed to disconnect OneDrive:", err);
+    return false;
+  }
+};
+
+
+// ---------------------- CHECK CONNECTION STATUS ------------------------
+
+/**
+ * Returns true if user is logged in and token is still valid.
+ */
+export const isOneDriveConnected = async () => {
+  const token = await getValidToken();
+  return token !== null;
+};
+
+
+// ---------------------- GET CONNECTED EMAIL ------------------------
+
+/**
+ * Returns the last saved connected OneDrive email.
+ * If not saved, it will try fetching from the API once.
+ */
+export const getConnectedEmail = async () => {
+  let email = await AsyncStorage.getItem("onedrive_email");
+
+  if (!email) {
+    const profile = await getOneDriveUserInfo();
+    email = profile?.userPrincipalName || null;
+  }
+
+  return email;
+};
