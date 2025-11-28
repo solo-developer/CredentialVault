@@ -1,23 +1,28 @@
-// hooks/useAppLock.ts
-import { useEffect } from 'react';
 import { AppState } from 'react-native';
+import { useEffect } from 'react';
 import { navigationRef } from '../navigation/RootNavigation';
+import { appLockEnabled } from '../utils/AppLockState';
 
-let appWasBackgrounded = false;
+let wasBackgrounded = false;
 
 export const useAppLock = () => {
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', state => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (!appLockEnabled) return; 
+
       if (state === 'background') {
-        appWasBackgrounded = true;
-      } else if (state === 'active' && appWasBackgrounded) {
-        appWasBackgrounded = false;
+        wasBackgrounded = true;
+      }
+
+      if (state === 'active' && wasBackgrounded) {
+        wasBackgrounded = false;
+
         if (navigationRef.isReady()) {
-          navigationRef.navigate('MasterPasswordSetup'); // force login
+          navigationRef.navigate('MasterPasswordSetup');
         }
       }
     });
 
-    return () => subscription.remove();
+    return () => sub.remove();
   }, []);
 };

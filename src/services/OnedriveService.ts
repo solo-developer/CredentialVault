@@ -5,6 +5,7 @@ import { oneDriveConfig } from './AuthConfig';
 import { BackupData } from './LocalBackupService';
 import RNFetchBlob from 'react-native-blob-util';
 import {  Platform } from 'react-native';
+import { disableAppLock, enableAppLock } from '../utils/AppLockState';
 
 const BACKUP_FILENAME = 'credentialvault-backup.json';
 const TOKEN_KEY = 'onedrive_token';
@@ -12,10 +13,12 @@ const REFRESH_KEY = 'onedrive_refresh';
 
 // -------------------- Authentication --------------------
 export const loginOneDrive = async () => {
+  disableAppLock(); 
   const authState = await authorize(oneDriveConfig);
   await AsyncStorage.setItem('onedrive_auth', JSON.stringify(authState));
   await AsyncStorage.setItem(TOKEN_KEY, authState.accessToken);
   await AsyncStorage.setItem(REFRESH_KEY, authState.refreshToken ?? '');
+  enableAppLock();
   return authState;
 };
 
