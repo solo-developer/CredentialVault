@@ -24,6 +24,7 @@ import { loadBackupFromFile } from '../services/BackupMergeService';
 import { createBackupJSON } from '../services/LocalBackupService';
 import { requestStoragePermission } from '../services/PermissionService';
 import { GlobalStyles } from '../styles/global';
+import { disableAppLock, enableAppLock } from '../utils/AppLockState';
 
 export default function SyncScreen({ navigation }: any) {
   const [connected, setConnected] = useState(false);
@@ -90,18 +91,24 @@ export default function SyncScreen({ navigation }: any) {
 
   const handleDownloadBackup = async () => {
     try {
+      disableAppLock();
       const ok = await requestStoragePermission();
-      if (!ok) return;
-
+      if (!ok) {
+        enableAppLock();
+        return;
+      }
       const path = await downloadBackupFile();
+      enableAppLock();
       Alert.alert('Downloaded', `Saved to: ${path}`);
     } catch (err) {
+      enableAppLock();
       console.error(err);
     }
   };
 
   const handleLoadFile = async () => {
     try {
+      disableAppLock();
       const result = await pick({
         type: [types.json],
         allowMultiSelection: false,
@@ -117,6 +124,7 @@ export default function SyncScreen({ navigation }: any) {
             text: 'Overwrite',
             onPress: async () => {
               const res = await loadBackupFromFile(file.uri, true);
+              enableAppLock();
               Alert.alert('Done', res);
             },
           },
@@ -124,13 +132,18 @@ export default function SyncScreen({ navigation }: any) {
             text: 'Append',
             onPress: async () => {
               const res = await loadBackupFromFile(file.uri, false);
+              enableAppLock();
               Alert.alert('Done', res);
             },
           },
-          { text: 'Cancel', style: 'cancel' },
+          { text: 'Cancel', style: 'cancel',
+            onPress: async () => {
+              enableAppLock();
+            }, },
         ],
       );
     } catch (err) {
+      enableAppLock();
       console.error(err);
     }
   };
