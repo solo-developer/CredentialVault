@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useEffect, useState } from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
 
 type Props = {
   visible: boolean;
@@ -15,7 +22,9 @@ export default function RenameFolderModal({
   onSave,
 }: Props) {
   const [name, setName] = useState(defaultName);
-
+  useEffect(() => {
+    setName(defaultName);
+  }, [defaultName]);
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
@@ -31,14 +40,14 @@ export default function RenameFolderModal({
 
           <View style={styles.row}>
             <TouchableOpacity style={styles.btnCancel} onPress={onCancel}>
-              <Text style={{ color: "#333" }}>Cancel</Text>
+              <Text style={{ color: '#333' }}>Cancel</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.btnSave}
               onPress={() => onSave(name.trim())}
             >
-              <Text style={{ color: "white" }}>Save</Text>
+              <Text style={{ color: 'white' }}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -50,29 +59,29 @@ export default function RenameFolderModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalBox: {
-    width: "80%",
-    backgroundColor: "#fff",
+    width: '80%',
+    backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
     elevation: 5,
   },
-  title: { fontSize: 18, fontWeight: "bold", marginBottom: 12 },
+  title: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     padding: 10,
     borderRadius: 6,
     marginBottom: 20,
   },
-  row: { flexDirection: "row", justifyContent: "flex-end" },
+  row: { flexDirection: 'row', justifyContent: 'flex-end' },
   btnCancel: { paddingVertical: 10, paddingHorizontal: 15 },
   btnSave: {
-    backgroundColor: "#007BFF",
+    backgroundColor: '#007BFF',
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 6,
