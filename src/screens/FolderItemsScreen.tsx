@@ -3,19 +3,13 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
-import { GlobalStyles } from "../styles/global";
+import { useAppTheme, AppColors } from "../styles/global";
+import SecondaryHeader from "../components/SecondaryHeader";
 
-interface Item {
-  id: string;
-  folderId: string;
-  name: string;
-  username: string;
-  password: string;
-  url: string;
-  customFields: any[];
-}
+import Item from "../types/Item";
 
 const FolderItemsScreen = ({ route }: any) => {
+  const { colors, styles: themeStyles } = useAppTheme();
   const { folderId, folderName } = route.params;
   const [items, setItems] = useState<Item[]>([]);
   const navigation = useNavigation<any>();
@@ -34,79 +28,116 @@ const FolderItemsScreen = ({ route }: any) => {
     return unsubscribe;
   }, [folderId]);
 
-  return (
-    <View style={GlobalStyles.container}>
-     <View style={GlobalStyles.navHeader}>
-     <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Ionicons name="arrow-back" size={26} color="#333" />
-     </TouchableOpacity>
-
-      <Text style={GlobalStyles.title}>{folderName}</Text>
-      <View style={{ width: 26 }} /> 
-    </View>
-
-      {items.length === 0 ? (
-        <Text style={styles.noItemsText}>No items in this folder.</Text>
-      ) : (
-        <FlatList
-          data={items}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          renderItem={({ item }) => (
-            <View style={styles.itemRow}>
-              {/* Item Name */}
-              <Text style={styles.itemName}>{item.name}</Text>
-
-              {/* Action icons */}
-              <View style={GlobalStyles.flexActions}>
-                {/* View */}
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("ViewItem", {
-                      itemId: item.id,
-                      item,
-                    })
-                  }
-                >
-                  <Ionicons name="eye-outline" size={24} color="#007bff" />
-                </TouchableOpacity>
-
-                {/* Edit */}
-                <TouchableOpacity
-                  style={{ marginLeft: 18 }}
-                  onPress={() =>
-                    navigation.navigate("EditItem", {
-                      itemId: item.id,
-                      item,
-                    })
-                  }
-                >
-                  <Ionicons name="create-outline" size={24} color="#28a745" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
+  const renderItem = ({ item }: { item: Item }) => (
+    <TouchableOpacity
+      style={[themeStyles.card, styles.itemCard, { borderColor: colors.border }]}
+      onPress={() => navigation.navigate("ViewItem", { item })}
+      activeOpacity={0.7}
+    >
+      <View style={[styles.itemIconContainer, { backgroundColor: item.type === 'note' ? `${colors.secondary}15` : `${colors.warning}15` }]}>
+        <Ionicons
+          name={item.type === 'note' ? "document-text" : "key"}
+          size={24}
+          color={item.type === 'note' ? colors.secondary : colors.warning}
         />
-      )}
+      </View>
+      <View style={styles.itemInfo}>
+        <Text style={[styles.itemName, { color: colors.textMain }]} numberOfLines={1}>{item.name}</Text>
+        <Text style={[styles.itemUsername, { color: colors.textMuted }]} numberOfLines={1}>
+          {item.type === 'note' ? 'Secure Note' : (item.username || 'No username')}
+        </Text>
+      </View>
+      <View style={styles.itemActions}>
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={() => navigation.navigate("EditItem", { item })}
+        >
+          <Ionicons name="pencil-outline" size={20} color={colors.primary} />
+        </TouchableOpacity>
+        <Ionicons name="chevron-forward" size={18} color={colors.textLight} />
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <SecondaryHeader
+        title={folderName}
+        onBack={() => navigation.goBack()}
+      />
+
+      <View style={[themeStyles.screenContainer, { paddingTop: 16 }]}>
+        {items.length === 0 ? (
+          <View style={themeStyles.emptyContainer}>
+            <View style={[styles.emptyIconCircle, { backgroundColor: `${colors.border}40` }]}>
+              <Ionicons name="key-outline" size={60} color={colors.textLight} />
+            </View>
+            <Text style={themeStyles.emptyText}>This folder is empty.</Text>
+            <TouchableOpacity
+              style={[themeStyles.button, { paddingHorizontal: 30, marginTop: 24 }]}
+              onPress={() => navigation.navigate("AddItem")}
+            >
+              <Text style={themeStyles.buttonText}>Add First Item</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={items}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ paddingBottom: 40 }}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-
-  noItemsText: { fontSize: 16, color: "#666", textAlign: "center", marginTop: 20 },
-  itemRow: {
+  itemCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 12,
-    backgroundColor: "#fff",
-    marginBottom: 10,
-    borderRadius: 8,
-    elevation: 2,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    marginBottom: 12,
   },
-  itemName: { fontSize: 16, color: "#333" },
-
+  itemIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  itemInfo: {
+    flex: 1,
+  },
+  itemName: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  itemUsername: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  itemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionBtn: {
+    padding: 10,
+    borderRadius: 10,
+    marginRight: 8,
+  },
+  emptyIconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  }
 });
 
 export default FolderItemsScreen;

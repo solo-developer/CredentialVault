@@ -6,6 +6,7 @@ import { BackupData } from './LocalBackupService';
 import RNFetchBlob from 'react-native-blob-util';
 import { Platform } from 'react-native';
 import { disableAppLock, enableAppLock } from '../utils/AppLockState';
+import { requestStoragePermission } from './PermissionService';
 
 const BACKUP_FILENAME = 'credentialvault-backup.json';
 
@@ -181,27 +182,53 @@ export const downloadBackupFile = async () => {
     const token = await getValidToken();
     if (!token) throw 'Not authenticated';
 
+    const hasPermission = await requestStoragePermission();
+    if (!hasPermission) throw 'Storage permission denied';
+
     const downloadUrl =
       `https://graph.microsoft.com/v1.0/me/drive/special/approot:/${BACKUP_FILENAME}:/content`;
 
-    const response = await fetch(downloadUrl, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!response.ok) throw 'File not found in OneDrive';
-
-    const content = await response.text();
-
     let path = '';
     if (Platform.OS === 'android') {
-      path = RNFetchBlob.fs.dirs.DownloadDir + '/' + BACKUP_FILENAME;
+      const downloadDir = RNFetchBlob.fs.dirs.DownloadDir;
+      path = `${downloadDir}/${BACKUP_FILENAME}`;
+      
+      const res = await RNFetchBlob.fetch('GET', downloadUrl, {
+        Authorization: `Bearer ${token}`
+      });
+
+      if (res.respInfo.status !== 200) {
+        throw `Server returned ${res.respInfo.status}`;
+      }
+
+      const content = await res.text();
+      await RNFetchBlob.fs.writeFile(path, content, 'utf8');
+
+      if (Platform.OS === 'android' && RNFetchBlob.android.addCompleteDownload) {
+        try {
+          await RNFetchBlob.android.addCompleteDownload({
+            title: BACKUP_FILENAME,
+            description: 'Credential Vault Backup',
+            mime: 'application/json',
+            path: path,
+            showNotification: true,
+          });
+        } catch (e) {
+          console.warn("Could not register download with system:", e);
+        }
+      }
+
+      return path;
     } else {
       path = RNFetchBlob.fs.dirs.DocumentDir + '/' + BACKUP_FILENAME;
+      const response = await fetch(downloadUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw 'File not found in OneDrive';
+      const content = await response.text();
+      await RNFetchBlob.fs.writeFile(path, content, 'utf8');
+      return path;
     }
-
-    await RNFetchBlob.fs.writeFile(path, content, 'utf8');
-
-    return path;
   } catch (err) {
     console.warn('Download Error:', err);
     throw err;

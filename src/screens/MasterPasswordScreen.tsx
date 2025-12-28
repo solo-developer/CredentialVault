@@ -10,11 +10,13 @@ import {
   KeyboardAvoidingView,
   Image,
   Platform,
+  StatusBar,
+  ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
-import { GlobalStyles } from '../styles/global';
+import { GlobalStyles, AppColors } from '../styles/global';
 import { MASTER_PASSWORD_KEY, MASTER_USERNAME_KEY } from '../Constants';
 import { SaveUserInfo, verifyUser } from '../services/AuthenticationService';
 import ReactNativeBiometrics from 'react-native-biometrics';
@@ -42,6 +44,7 @@ const MasterPasswordSetup: React.FC = () => {
         setIsFirstLaunch(true);
       } else {
         setIsFirstLaunch(false);
+        setUsername(storedUsername || '');
       }
     };
     checkFirstLaunch();
@@ -62,11 +65,11 @@ const MasterPasswordSetup: React.FC = () => {
 
   const handleSetup = async () => {
     if (!username.trim() || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill all fields');
+      Alert.alert('Incomplete Fields', 'Please fill in all the required information.');
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      Alert.alert('Mismatch', 'The passwords you entered do not match.');
       return;
     }
     setLoading(true);
@@ -76,13 +79,17 @@ const MasterPasswordSetup: React.FC = () => {
   };
 
   const handleLogin = async () => {
+    if (!password) {
+      Alert.alert('Password Required', 'Please enter your master password.');
+      return;
+    }
     setLoading(true);
     let isUserValid = await verifyUser(username, password);
     setLoading(false);
     if (isUserValid) {
       navigation.replace('Dashboard');
     } else {
-      Alert.alert('Error', 'Invalid username or password');
+      Alert.alert('Access Denied', 'The password you entered is incorrect.');
     }
   };
 
@@ -90,130 +97,138 @@ const MasterPasswordSetup: React.FC = () => {
     const rnBiometrics = new ReactNativeBiometrics();
     try {
       const result = await rnBiometrics.simplePrompt({
-        promptMessage: 'Authenticate',
+        promptMessage: 'Unlock Credential Vault',
       });
       if (result.success) {
         navigation.replace('Dashboard');
-      } else {
-        Alert.alert('Authentication failed');
       }
     } catch (error: any) {
       console.log('Biometric error', error);
-      Alert.alert('Authentication failed', error.message);
     }
   };
 
-  if (isFirstLaunch === null) return null;
+  if (isFirstLaunch === null) return (
+    <View style={[styles.container, { justifyContent: 'center' }]}>
+      <ActivityIndicator size="large" color={AppColors.primary} />
+    </View>
+  );
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
-      <Image source={require('../assets/icon.png')} style={styles.logo} />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <Text style={styles.title}>
-        {isFirstLaunch ? 'Setup Master Password' : 'Welcome Back'}
-      </Text>
-      <Text style={styles.subtext}>
-        Please enter the details below to continue
-      </Text>
-
-      <View style={styles.formContainer}>
-        <TextInput
-          placeholder="Username"
-          style={GlobalStyles.inputMd}
-          value={username}
-          onChangeText={setUsername}
-        />
-
-        <View style={styles.inputWrapper}>
-          <TextInput
-            placeholder="Master Password"
-            style={[GlobalStyles.inputMd, { paddingRight: 40 }]}
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity
-            style={GlobalStyles.eyeIcon}
-            onPress={() => setShowPassword(prev => !prev)}
-          >
-            <Icon
-              name={showPassword ? 'eye-off' : 'eye'}
-              size={22}
-              color="gray"
-            />
-          </TouchableOpacity>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <View style={styles.logoCircle}>
+              <Ionicons name="shield-checkmark" size={60} color={AppColors.primary} />
+            </View>
+          </View>
+          <Text style={styles.title}>
+            {isFirstLaunch ? 'Create Vault' : 'Welcome Back'}
+          </Text>
+          <Text style={styles.subtext}>
+            {isFirstLaunch
+              ? 'Securely store your passwords on your device'
+              : `Hello ${username}, please authenticate to continue`}
+          </Text>
         </View>
 
-        {isFirstLaunch && (
+        <View style={styles.formContainer}>
+          {isFirstLaunch && (
+            <TextInput
+              placeholder="Preferred Username"
+              placeholderTextColor={AppColors.textLight}
+              style={GlobalStyles.inputMd}
+              value={username}
+              onChangeText={setUsername}
+              autoFocus={true}
+            />
+          )}
+
           <View style={styles.inputWrapper}>
             <TextInput
-              placeholder="Confirm Password"
-              style={[GlobalStyles.inputMd, { paddingRight: 40 }]}
-              secureTextEntry={!showConfirmPassword}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              placeholder="Master Password"
+              placeholderTextColor={AppColors.textLight}
+              style={[GlobalStyles.inputMd, { paddingRight: 50 }]}
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              autoFocus={!isFirstLaunch}
             />
             <TouchableOpacity
-              style={GlobalStyles.eyeIcon}
-              onPress={() => setShowConfirmPassword(prev => !prev)}
+              style={styles.eyeIconBtn}
+              onPress={() => setShowPassword(prev => !prev)}
             >
-              <Icon
-                name={showConfirmPassword ? 'eye-off' : 'eye'}
+              <Ionicons
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={22}
-                color="gray"
+                color={AppColors.textMuted}
               />
             </TouchableOpacity>
           </View>
-        )}
 
-        <TouchableOpacity
-          style={GlobalStyles.btnPrimary}
-          onPress={isFirstLaunch ? handleSetup : handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <ActivityIndicator color="#fff" />
-              <Text style={[GlobalStyles.buttonText, { marginLeft: 10 }]}>
-                {isFirstLaunch ? 'Signing up...' : 'Logging in...'}
-              </Text>
+          {isFirstLaunch && (
+            <View style={styles.inputWrapper}>
+              <TextInput
+                placeholder="Confirm Master Password"
+                placeholderTextColor={AppColors.textLight}
+                style={[GlobalStyles.inputMd, { paddingRight: 50 }]}
+                secureTextEntry={!showConfirmPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeIconBtn}
+                onPress={() => setShowConfirmPassword(prev => !prev)}
+              >
+                <Ionicons
+                  name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={22}
+                  color={AppColors.textMuted}
+                />
+              </TouchableOpacity>
             </View>
-          ) : (
-            <Text style={GlobalStyles.buttonText}>
-              {isFirstLaunch ? 'Sign Up' : 'Login'}
-            </Text>
           )}
-        </TouchableOpacity>
 
-        {/* Biometric Login Option */}
-        {!isFirstLaunch && biometricEnabled && (
-          <>
-            <Text style={styles.orText}>— OR —</Text>
+          <TouchableOpacity
+            style={[GlobalStyles.button, { marginTop: 10 }]}
+            onPress={isFirstLaunch ? handleSetup : handleLogin}
+            disabled={loading}
+            activeOpacity={0.8}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={GlobalStyles.buttonText}>
+                {isFirstLaunch ? 'Setup Vault' : 'Unlock Now'}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {!isFirstLaunch && biometricEnabled && (
             <TouchableOpacity
-              style={styles.biometricButton}
+              style={styles.biometricBtn}
               onPress={handleBiometricLogin}
             >
-              <Text style={styles.biometricButtonText}>
-                Login with Biometric
-              </Text>
+              <Ionicons name="finger-print" size={32} color={AppColors.primary} />
+              <Text style={styles.biometricLabel}>Or use biometric unlock</Text>
             </TouchableOpacity>
-          </>
-        )}
-      </View>
+          )}
+        </View>
 
-      <Text style={styles.footerText}>
-        Made with love by
-        <Text style={{ fontWeight: 'bold' }}> solo-developer ❤️</Text>
-      </Text>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Made with ❤️ by</Text>
+          <Text style={styles.footerAuthor}>solo-developer</Text>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -224,43 +239,83 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
     paddingHorizontal: 30,
   },
-  logo: {
-    width: 110,
-    height: 110,
-    alignSelf: 'center',
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    paddingBottom: 40,
+  },
+  header: {
+    marginTop: Platform.OS === 'ios' ? 60 : 40,
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  logoContainer: {
     marginBottom: 20,
-    borderRadius: 100,
+  },
+  logoCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: `${AppColors.primary}08`,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: `${AppColors.primary}15`,
   },
   title: {
     fontSize: 26,
+    fontWeight: '800',
+    color: AppColors.textMain,
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  subtext: {
+    fontSize: 14,
+    color: AppColors.textMuted,
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 20,
+  },
+  formContainer: {
+    width: '100%',
+    gap: 16,
+    flex: 1,
+  },
+  inputWrapper: {
+    position: 'relative',
+    justifyContent: 'center'
+  },
+  eyeIconBtn: {
+    position: 'absolute',
+    right: 14,
+    padding: 8,
+  },
+  biometricBtn: {
+    marginTop: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  biometricLabel: {
+    marginTop: 8,
+    fontSize: 14,
+    color: AppColors.primary,
     fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#222222',
   },
-  subtext: { fontSize: 12, color: 'gray', textAlign: 'center' },
-  formContainer: { width: '100%', gap: 15 },
-  footerText: {
-    textAlign: 'center',
-    marginTop: 60,
-    fontSize: 12,
-    color: '#777',
-  },
-  inputWrapper: { position: 'relative' },
-  orText: {
-    textAlign: 'center',
-    marginVertical: 10,
-    color: 'gray',
-    fontWeight: '500',
-  },
-  biometricButton: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    padding: 14,
-    borderRadius: 10,
+  footer: {
+    marginTop: 40,
     alignItems: 'center',
   },
-  biometricButtonText: { fontSize: 16, color: '#222', fontWeight: '500' },
+  footerText: {
+    fontSize: 13,
+    color: AppColors.textLight,
+    marginBottom: 4,
+  },
+  footerAuthor: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: AppColors.textMuted,
+    letterSpacing: 1,
+  },
 });

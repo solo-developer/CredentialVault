@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // Screens
@@ -15,6 +16,7 @@ import ChangeLoginInformationScreen from './src/screens/ChangeLoginInformationSc
 import { initBackgroundSync } from './src/services/BackgroundSync';
 import { useAppLock } from './src/hooks/useAppLock';
 import { navigationRef } from './src/navigation/RootNavigation';
+import { ThemeProvider } from './src/context/ThemeContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,7 +25,7 @@ export default function App() {
   const [hasMasterPassword, setHasMasterPassword] = useState(false);
   useAppLock();
   useEffect(() => {
-    initBackgroundSync(); 
+    initBackgroundSync();
   }, []);
   useEffect(() => {
     const checkMasterPassword = async () => {
@@ -43,24 +45,28 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer ref={navigationRef}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!hasMasterPassword ? (
-          <Stack.Screen
-            name="MasterPasswordSetup"
-            component={MasterPasswordSetup}
-          />
-        ) : null}
-        <Stack.Screen name="Dashboard" component={Dashboard} />
-        <Stack.Screen name="AddItem" component={AddItemScreen} />
-        <Stack.Screen name="FolderItems" component={FolderItemsScreen} />
-        <Stack.Screen name="ViewItem" component={ViewItemScreen} />
-        <Stack.Screen name="EditItem" component={EditItemScreen} />
-        <Stack.Screen
-          name="ChangeLoginScreen"
-          component={ChangeLoginInformationScreen}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <NavigationContainer ref={navigationRef}>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {!hasMasterPassword ? (
+              <Stack.Screen
+                name="MasterPasswordSetup"
+                component={MasterPasswordSetup}
+              />
+            ) : null}
+            <Stack.Screen name="Dashboard" component={Dashboard} />
+            <Stack.Screen name="AddItem" component={AddItemScreen} />
+            <Stack.Screen name="FolderItems" component={FolderItemsScreen} />
+            <Stack.Screen name="ViewItem" component={ViewItemScreen} />
+            <Stack.Screen name="EditItem" component={EditItemScreen as any} />
+            <Stack.Screen
+              name="ChangeLoginScreen"
+              component={ChangeLoginInformationScreen}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

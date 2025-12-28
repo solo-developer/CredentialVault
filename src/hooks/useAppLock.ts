@@ -2,24 +2,33 @@ import { AppState } from 'react-native';
 import { useEffect } from 'react';
 import { navigationRef } from '../navigation/RootNavigation';
 import { appLockEnabled } from '../utils/AppLockState';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-let wasBackgrounded = false;
+let backgroundTimestamp = 0;
 
 export const useAppLock = () => {
   useEffect(() => {
-    const sub = AppState.addEventListener('change', (state) => {
+    const sub = AppState.addEventListener('change', async (state) => {
       if (!appLockEnabled) return; 
 
       if (state === 'background') {
-        wasBackgrounded = true;
+        backgroundTimestamp = Date.now();
       }
 
-      if (state === 'active' && wasBackgrounded) {
-        wasBackgrounded = false;
+      if (state === 'active') {
+        const now = Date.now();
+        const timePassed = now - backgroundTimestamp;
 
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('MasterPasswordSetup');
+        // Fetch user preference for lock threshold, default to 30s
+        const savedThreshold = await AsyncStorage.getItem('@auto_lock_timer');
+        const threshold = savedThreshold ? parseInt(savedThreshold) * 1000 : 30000;
+
+        if (backgroundTimestamp !== 0 && timePassed > threshold) {
+          if (navigationRef.isReady()) {
+            (navigationRef as any).navigate('MasterPasswordSetup');
+          }
         }
+        backgroundTimestamp = 0;
       }
     });
 
