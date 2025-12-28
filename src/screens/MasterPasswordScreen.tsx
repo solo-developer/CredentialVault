@@ -73,9 +73,19 @@ const MasterPasswordSetup: React.FC = () => {
       return;
     }
     setLoading(true);
-    await SaveUserInfo(username, password);
-    setLoading(false);
-    navigation.replace('Dashboard');
+
+    // Use timeout to allow UI to render loading state before heavy hashing
+    setTimeout(async () => {
+      try {
+        await SaveUserInfo(username, password);
+        setLoading(false);
+        navigation.replace('Dashboard');
+      } catch (error) {
+        setLoading(false);
+        Alert.alert('Error', 'Failed to setup vault. Please try again.');
+        console.error(error);
+      }
+    }, 100);
   };
 
   const handleLogin = async () => {
@@ -84,13 +94,23 @@ const MasterPasswordSetup: React.FC = () => {
       return;
     }
     setLoading(true);
-    let isUserValid = await verifyUser(username, password);
-    setLoading(false);
-    if (isUserValid) {
-      navigation.replace('Dashboard');
-    } else {
-      Alert.alert('Access Denied', 'The password you entered is incorrect.');
-    }
+
+    // Use timeout to allow UI to render loading state before heavy comparison
+    setTimeout(async () => {
+      try {
+        let isUserValid = await verifyUser(username, password);
+        setLoading(false);
+        if (isUserValid) {
+          navigation.replace('Dashboard');
+        } else {
+          Alert.alert('Access Denied', 'The password you entered is incorrect.');
+        }
+      } catch (error) {
+        setLoading(false);
+        Alert.alert('Error', 'Authentication failed. Please try again.');
+        console.error(error);
+      }
+    }, 100);
   };
 
   const handleBiometricLogin = async () => {
@@ -226,7 +246,7 @@ const MasterPasswordSetup: React.FC = () => {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Made with ❤️ by</Text>
-          <Text style={styles.footerAuthor}>solo-developer</Text>
+          <Text style={styles.footerAuthor}>Niroj Dahal</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
