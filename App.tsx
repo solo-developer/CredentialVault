@@ -17,6 +17,7 @@ import { initBackgroundSync } from './src/services/BackgroundSync';
 import { useAppLock } from './src/hooks/useAppLock';
 import { navigationRef } from './src/navigation/RootNavigation';
 import { ThemeProvider } from './src/context/ThemeContext';
+import { MASTER_PASSWORD_KEY } from './src/Constants';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,7 +30,7 @@ export default function App() {
   }, []);
   useEffect(() => {
     const checkMasterPassword = async () => {
-      const password = await AsyncStorage.getItem('masterPassword');
+      const password = await AsyncStorage.getItem(MASTER_PASSWORD_KEY);
       setHasMasterPassword(!!password);
       setLoading(false);
     };

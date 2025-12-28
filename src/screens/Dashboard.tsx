@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Modal, TextInput, StyleSheet, Pressable, Dimensions } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "./HomeScreen";
 import SettingsScreen from "./SettingsScreen";
 import { addFolder } from "../services/FolderService";
@@ -14,7 +14,7 @@ import NavHeader from "../components/NavHeader";
 import { useBackHandlerExitApp } from "../hooks/useBackHandlerExitApp";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const Tab = createMaterialTopTabNavigator();
+const Tab = createBottomTabNavigator();
 
 export default function Dashboard({ navigation }: any) {
   const { colors, styles: themeStyles } = useAppTheme();
@@ -53,16 +53,10 @@ export default function Dashboard({ navigation }: any) {
       <NavHeader navigation={navigation}></NavHeader>
 
       <Tab.Navigator
-        tabBarPosition="bottom"
         screenOptions={({ route }) => ({
+          headerShown: false,
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.textMuted,
-          tabBarIndicatorStyle: {
-            backgroundColor: colors.primary,
-            top: 0,
-            height: 3,
-            borderRadius: 3,
-          },
           tabBarStyle: {
             backgroundColor: colors.surface,
             borderTopColor: colors.border,
