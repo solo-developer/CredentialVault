@@ -50,12 +50,10 @@ export default function App() {
       <ThemeProvider>
         <NavigationContainer ref={navigationRef}>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {!hasMasterPassword ? (
-              <Stack.Screen
-                name="MasterPasswordSetup"
-                component={MasterPasswordSetup}
-              />
-            ) : null}
+            <Stack.Screen
+              name="MasterPasswordSetup"
+              component={MasterPasswordSetup}
+            />
             <Stack.Screen name="Dashboard" component={Dashboard} />
             <Stack.Screen name="AddItem" component={AddItemScreen} />
             <Stack.Screen name="FolderItems" component={FolderItemsScreen} />

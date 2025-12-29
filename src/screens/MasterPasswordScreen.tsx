@@ -22,7 +22,7 @@ import { SaveUserInfo, verifyUser } from '../services/AuthenticationService';
 import ReactNativeBiometrics from 'react-native-biometrics';
 import { useBackHandlerExitApp } from '../hooks/useBackHandlerExitApp';
 
-const MasterPasswordSetup: React.FC = () => {
+const MasterPasswordSetup: React.FC = ({ route }: any) => {
   const navigation = useNavigation<any>();
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState('');
@@ -45,10 +45,18 @@ const MasterPasswordSetup: React.FC = () => {
       } else {
         setIsFirstLaunch(false);
         setUsername(storedUsername || '');
+
+        // Check if we should auto-unlock
+        const requireLock = await AsyncStorage.getItem('@require_app_lock');
+        const isManualLock = route?.params?.manualLock;
+
+        if (requireLock === 'false' && !isManualLock) {
+          navigation.replace('Dashboard');
+        }
       }
     };
     checkFirstLaunch();
-  }, []);
+  }, [route?.params]);
 
   // Load biometric preference if login screen
   useEffect(() => {

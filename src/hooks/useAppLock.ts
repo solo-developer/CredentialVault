@@ -9,7 +9,9 @@ let backgroundTimestamp = 0;
 export const useAppLock = () => {
   useEffect(() => {
     const sub = AppState.addEventListener('change', async (state) => {
-      if (!appLockEnabled) return; 
+      const requireLock = await AsyncStorage.getItem('@require_app_lock');
+      if (requireLock === 'false') return;
+      if (!appLockEnabled) return;
 
       if (state === 'background') {
         backgroundTimestamp = Date.now();
@@ -25,7 +27,7 @@ export const useAppLock = () => {
 
         if (backgroundTimestamp !== 0 && timePassed > threshold) {
           if (navigationRef.isReady()) {
-            (navigationRef as any).navigate('MasterPasswordSetup');
+            (navigationRef as any).navigate('MasterPasswordSetup', { manualLock: true });
           }
         }
         backgroundTimestamp = 0;

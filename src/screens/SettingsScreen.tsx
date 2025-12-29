@@ -12,6 +12,7 @@ export default function SettingsScreen({ navigation }: any) {
   const [biometricsAvailable, setBiometricsAvailable] = useState(false);
   const [useBiometricLogin, setUseBiometricLogin] = useState(false);
   const [autoLockTimer, setAutoLockTimer] = useState('30'); // Default to 30s as string for AsyncStorage
+  const [requireAppLock, setRequireAppLock] = useState(true);
 
 
   useEffect(() => {
@@ -32,6 +33,9 @@ export default function SettingsScreen({ navigation }: any) {
         if (savedTimer) {
           setAutoLockTimer(savedTimer);
         }
+
+        const savedLock = await AsyncStorage.getItem('@require_app_lock');
+        setRequireAppLock(savedLock !== 'false'); // Default to true
       } catch (error) {
         console.log('Failed to load preferences', error);
       }
@@ -76,6 +80,27 @@ export default function SettingsScreen({ navigation }: any) {
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.textLight} />
         </TouchableOpacity>
+
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+        <View style={styles.settingRow}>
+          <View style={[styles.iconContainer, { backgroundColor: `${colors.secondary}12` }]}>
+            <Ionicons name="lock-closed-outline" size={22} color={colors.secondary} />
+          </View>
+          <View style={styles.settingInfo}>
+            <Text style={[styles.settingTitle, { color: colors.textMain }]}>Require App Lock</Text>
+            <Text style={[styles.settingDesc, { color: colors.textMuted }]}>Ask for password on startup</Text>
+          </View>
+          <Switch
+            value={requireAppLock}
+            onValueChange={async (val) => {
+              setRequireAppLock(val);
+              await AsyncStorage.setItem('@require_app_lock', val ? 'true' : 'false');
+            }}
+            trackColor={{ false: colors.border, true: colors.success }}
+            thumbColor={colors.white}
+          />
+        </View>
 
         {biometricsAvailable && (
           <>
