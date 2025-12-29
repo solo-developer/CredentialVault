@@ -14,20 +14,37 @@ export const useAppLock = () => {
       if (!appLockEnabled) return;
 
       if (state === 'background') {
-        backgroundTimestamp = Date.now();
-      }
-
-      if (state === 'active') {
-        const now = Date.now();
-        const timePassed = now - backgroundTimestamp;
-
-        // Fetch user preference for lock threshold, default to 30s
         const savedThreshold = await AsyncStorage.getItem('@auto_lock_timer');
         const threshold = savedThreshold ? parseInt(savedThreshold) * 1000 : 30000;
 
-        if (backgroundTimestamp !== 0 && timePassed > threshold) {
+        if (threshold === 0) {
           if (navigationRef.isReady()) {
-            (navigationRef as any).navigate('MasterPasswordSetup', { manualLock: true });
+            const currentRoute = navigationRef.getCurrentRoute();
+            if (currentRoute?.name !== 'MasterPasswordSetup') {
+              (navigationRef as any).navigate('MasterPasswordSetup', { manualLock: true });
+            }
+          }
+          backgroundTimestamp = 0; // Don't trigger again on active
+        } else {
+          backgroundTimestamp = Date.now();
+        }
+      }
+
+      if (state === 'active') {
+        if (backgroundTimestamp === 0) return;
+
+        const now = Date.now();
+        const timePassed = now - backgroundTimestamp;
+
+        const savedThreshold = await AsyncStorage.getItem('@auto_lock_timer');
+        const threshold = savedThreshold ? parseInt(savedThreshold) * 1000 : 30000;
+
+        if (timePassed > threshold) {
+          if (navigationRef.isReady()) {
+            const currentRoute = navigationRef.getCurrentRoute();
+            if (currentRoute?.name !== 'MasterPasswordSetup') {
+              (navigationRef as any).navigate('MasterPasswordSetup', { manualLock: true });
+            }
           }
         }
         backgroundTimestamp = 0;
