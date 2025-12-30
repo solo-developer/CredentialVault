@@ -18,18 +18,24 @@ The application is intended for personal use and ensures that sensitive data rem
 - 🔑 Secure credential and password storage  
 - 📝 Encrypted private notes  
 - 🔍 Search and organized categorization  
+- 🔒 Encrypted local data storage  
 - 🛡️ Authentication-protected access  
 - 📱 Cross-platform support (Android & iOS)
+- 📱 Biometric authentication (Face ID / Fingerprint)
+- Auto-lock after inactivity
+- Cloud backup
 
 ---
 
-## 🧭 Planned Enhancements
+## 📸 Screenshots
 
-- Biometric authentication (Face ID / Fingerprint)
-- Password generator
-- Auto-lock after inactivity
-- Secure cloud backup
-- Cross-device synchronization
+| Login / Unlock | Credential List | Cloud Backup |
+|---------------|----------------|--------------|
+| <img src="screenshots/LoginScreen.jfif" width="250"/> | <img src="screenshots/DashboardScreen.jfif" width="250"/> | <img src="screenshots/SyncScreen.jfif" width="250"/> |
+
+| Settings |
+|----------|
+| <img src="screenshots/SettingsScreen.jfif" width="250"/> |
 
 ---
 
